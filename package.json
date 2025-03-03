@@ -7,9 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint --fix",
-    "setup": "node scripts/fetchPrayerTimes.js",
-    "type-check": "tsc --noEmit",
-    "prepare": "husky install"
+    "setup": "node scripts/fetchPrayerTimes.js"
   },
   "dependencies": {
     "next": "15.2.0",

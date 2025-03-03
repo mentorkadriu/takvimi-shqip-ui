@@ -1,0 +1,426 @@
+{
+  "year": "2025",
+  "month": "02",
+  "data": {
+    "10": {
+      "data_sipas_kal_boteror": 10,
+      "dita_javes": "e hënë",
+      "festat_fetare_dhe_shenime_te_tjera_astronomike": "",
+      "kohet": {
+        "imsaku": "4:59",
+        "sabahu": "5:19",
+        "lindja_e_diellit": "6:36",
+        "dreka": "14:43",
+        "ikindia": "17:08",
+        "akshami": "18:40",
+        "jacia": "10:32",
+        "gjatesia_e_dites": ""
+      }
+    },
+    "11": {
+      "data_sipas_kal_boteror": 11,
+      "dita_javes": "e martë",
+      "festat_fetare_dhe_shenime_te_tjera_astronomike": "",
+      "kohet": {
+        "imsaku": "4:58",
+        "sabahu": "5:18",
+        "lindja_e_diellit": "6:35",
+        "dreka": "14:44",
+        "ikindia": "17:10",
+        "akshami": "18:42",
+        "jacia": "10:35",
+        "gjatesia_e_dites": ""
+      }
+    },
+    "12": {
+      "data_sipas_kal_boteror": 12,
+      "dita_javes": "e mërkurë",
+      "festat_fetare_dhe_shenime_te_tjera_astronomike": "",
+      "kohet": {
+        "imsaku": "4:57",
+        "sabahu": "5:17",
+        "lindja_e_diellit": "6:33",
+        "dreka": "11:54",
+        "ikindia": "14:45",
+        "akshami": "17:11",
+        "jacia": "18:43",
+        "gjatesia_e_dites": "10:38"
+      }
+    },
+    "13": {
+      "data_sipas_kal_boteror": 13,
+      "dita_javes": "e enjte",
+      "festat_fetare_dhe_shenime_te_tjera_astronomike": "Nata e Beratit, Hëna e plotë",
+      "kohet": {
+        "imsaku": "4:56",
+        "sabahu": "5:16",
+        "lindja_e_diellit": "6:32",
+        "dreka": "11:54",
+        "ikindia": "14:46",
+        "akshami": "17:13",
+        "jacia": "18:45",
+        "gjatesia_e_dites": "10:41"
+      }
+    },
+    "14": {
+      "data_sipas_kal_boteror": 14,
+      "dita_javes": "e premte",
+      "festat_fetare_dhe_shenime_te_tjera_astronomike": "e Xhuma",
+      "kohet": {
+        "imsaku": "4:55",
+        "sabahu": "5:15",
+        "lindja_e_diellit": "6:31",
+        "dreka": "14:48",
+        "ikindia": "17:14",
+        "akshami": "18:46",
+        "jacia": "10:43",
+        "gjatesia_e_dites": ""
+      }
+    },
+    "15": {
+      "data_sipas_kal_boteror": 15,
+      "dita_javes": "e shtunë",
+      "festat_fetare_dhe_shenime_te_tjera_astronomike": "",
+      "kohet": {
+        "imsaku": "4:54",
+        "sabahu": "5:14",
+        "lindja_e_diellit": "6:29",
+        "dreka": "14:49",
+        "ikindia": "17:16",
+        "akshami": "18:48",
+        "jacia": "10:47",
+        "gjatesia_e_dites": ""
+      }
+    },
+    "16": {
+      "data_sipas_kal_boteror": 16,
+      "dita_javes": "e diel",
+      "festat_fetare_dhe_shenime_te_tjera_astronomike": "",
+      "kohet": {
+        "imsaku": "4:53",
+        "sabahu": "5:13",
+        "lindja_e_diellit": "6:28",
+        "dreka": "14:50",
+        "ikindia": "17:17",
+        "akshami": "18:49",
+        "jacia": "10:49",
+        "gjatesia_e_dites": ""
+      }
+    },
+    "17": {
+      "data_sipas_kal_boteror": 17,
+      "dita_javes": "e hënë",
+      "festat_fetare_dhe_shenime_te_tjera_astronomike": "Dita e Pavarësisë së Kosovës",
+      "kohet": {
+        "imsaku": "4:51",
+        "sabahu": "5:11",
+        "lindja_e_diellit": "6:27",
+        "dreka": "14:51",
+        "ikindia": "17:18",
+        "akshami": "18:50",
+        "jacia": "10:51",
+        "gjatesia_e_dites": ""
+      }
+    },
+    "18": {
+      "data_sipas_kal_boteror": 18,
+      "dita_javes": "e martë",
+      "festat_fetare_dhe_shenime_te_tjera_astronomike": "",
+      "kohet": {
+        "imsaku": "4:50",
+        "sabahu": "5:10",
+        "lindja_e_diellit": "6:25",
+        "dreka": "14:51",
+        "ikindia": "17:19",
+        "akshami": "18:51",
+        "jacia": "10:54",
+        "gjatesia_e_dites": ""
+      }
+    },
+    "19": {
+      "data_sipas_kal_boteror": 19,
+      "dita_javes": "e mërkurë",
+      "festat_fetare_dhe_shenime_te_tjera_astronomike": "Xhemra I në ajër",
+      "kohet": {
+        "imsaku": "4:49",
+        "sabahu": "5:09",
+        "lindja_e_diellit": "6:23",
+        "dreka": "11:54",
+        "ikindia": "14:52",
+        "akshami": "17:21",
+        "jacia": "18:52",
+        "gjatesia_e_dites": "10:58"
+      }
+    },
+    "20": {
+      "data_sipas_kal_boteror": 20,
+      "dita_javes": "e enjte",
+      "festat_fetare_dhe_shenime_te_tjera_astronomike": "",
+      "kohet": {
+        "imsaku": "4:48",
+        "sabahu": "5:08",
+        "lindja_e_diellit": "6:22",
+        "dreka": "14:53",
+        "ikindia": "17:22",
+        "akshami": "18:53",
+        "jacia": "11:00",
+        "gjatesia_e_dites": ""
+      }
+    },
+    "21": {
+      "data_sipas_kal_boteror": 21,
+      "dita_javes": "e premte",
+      "festat_fetare_dhe_shenime_te_tjera_astronomike": "e Xhuma",
+      "kohet": {
+        "imsaku": "4:46",
+        "sabahu": "5:06",
+        "lindja_e_diellit": "6:20",
+        "dreka": "14:54",
+        "ikindia": "17:23",
+        "akshami": "18:54",
+        "jacia": "11:03",
+        "gjatesia_e_dites": ""
+      }
+    },
+    "22": {
+      "data_sipas_kal_boteror": 22,
+      "dita_javes": "e shtunë",
+      "festat_fetare_dhe_shenime_te_tjera_astronomike": "",
+      "kohet": {
+        "imsaku": "4:44",
+        "sabahu": "5:04",
+        "lindja_e_diellit": "6:18",
+        "dreka": "14:55",
+        "ikindia": "17:25",
+        "akshami": "18:56",
+        "jacia": "11:07",
+        "gjatesia_e_dites": ""
+      }
+    },
+    "23": {
+      "data_sipas_kal_boteror": 23,
+      "dita_javes": "e diel",
+      "festat_fetare_dhe_shenime_te_tjera_astronomike": "",
+      "kohet": {
+        "imsaku": "4:43",
+        "sabahu": "5:03",
+        "lindja_e_diellit": "6:17",
+        "dreka": "14:56",
+        "ikindia": "17:26",
+        "akshami": "18:57",
+        "jacia": "11:09",
+        "gjatesia_e_dites": ""
+      }
+    },
+    "24": {
+      "data_sipas_kal_boteror": 24,
+      "dita_javes": "e hënë",
+      "festat_fetare_dhe_shenime_te_tjera_astronomike": "",
+      "kohet": {
+        "imsaku": "4:41",
+        "sabahu": "5:01",
+        "lindja_e_diellit": "6:15",
+        "dreka": "14:57",
+        "ikindia": "17:27",
+        "akshami": "18:58",
+        "jacia": "11:12",
+        "gjatesia_e_dites": ""
+      }
+    },
+    "25": {
+      "data_sipas_kal_boteror": 25,
+      "dita_javes": "e martë",
+      "festat_fetare_dhe_shenime_te_tjera_astronomike": "Xhemra II në ujë",
+      "kohet": {
+        "imsaku": "4:40",
+        "sabahu": "5:00",
+        "lindja_e_diellit": "6:13",
+        "dreka": "14:57",
+        "ikindia": "17:28",
+        "akshami": "18:58",
+        "jacia": "11:15",
+        "gjatesia_e_dites": ""
+      }
+    },
+    "26": {
+      "data_sipas_kal_boteror": 26,
+      "dita_javes": "e mërkurë",
+      "festat_fetare_dhe_shenime_te_tjera_astronomike": "",
+      "kohet": {
+        "imsaku": "4:39",
+        "sabahu": "4:59",
+        "lindja_e_diellit": "6:11",
+        "dreka": "11:52",
+        "ikindia": "14:58",
+        "akshami": "17:29",
+        "jacia": "18:59",
+        "gjatesia_e_dites": "11:18"
+      }
+    },
+    "27": {
+      "data_sipas_kal_boteror": 27,
+      "dita_javes": "e enjte",
+      "festat_fetare_dhe_shenime_te_tjera_astronomike": "",
+      "kohet": {
+        "imsaku": "4:37",
+        "sabahu": "4:57",
+        "lindja_e_diellit": "6:08",
+        "dreka": "14:58",
+        "ikindia": "17:30",
+        "akshami": "19:00",
+        "jacia": "11:22",
+        "gjatesia_e_dites": ""
+      }
+    },
+    "28": {
+      "data_sipas_kal_boteror": 28,
+      "dita_javes": "e premte",
+      "festat_fetare_dhe_shenime_te_tjera_astronomike": "e Xhuma, Nata e Ramazanit-teravia e parë",
+      "kohet": {
+        "imsaku": "4:36",
+        "sabahu": "4:56",
+        "lindja_e_diellit": "6:06",
+        "dreka": "11:51",
+        "ikindia": "14:59",
+        "akshami": "17:31",
+        "jacia": "19:01",
+        "gjatesia_e_dites": "11:25"
+      }
+    },
+    "01": {
+      "data_sipas_kal_boteror": 1,
+      "dita_javes": "e shtunë",
+      "festat_fetare_dhe_shenime_te_tjera_astronomike": "Sha'ban 1446 V.H.",
+      "kohet": {
+        "imsaku": "5:10",
+        "sabahu": "5:30",
+        "lindja_e_diellit": "6:46",
+        "dreka": "11:54",
+        "ikindia": "14:34",
+        "akshami": "16:57",
+        "jacia": "18:30",
+        "gjatesia_e_dites": "10:11"
+      }
+    },
+    "02": {
+      "data_sipas_kal_boteror": 2,
+      "dita_javes": "e diel",
+      "festat_fetare_dhe_shenime_te_tjera_astronomike": "",
+      "kohet": {
+        "imsaku": "5:09",
+        "sabahu": "5:29",
+        "lindja_e_diellit": "6:45",
+        "dreka": "14:35",
+        "ikindia": "16:58",
+        "akshami": "18:31",
+        "jacia": "10:13",
+        "gjatesia_e_dites": ""
+      }
+    },
+    "03": {
+      "data_sipas_kal_boteror": 3,
+      "dita_javes": "e hënë",
+      "festat_fetare_dhe_shenime_te_tjera_astronomike": "",
+      "kohet": {
+        "imsaku": "5:08",
+        "sabahu": "5:28",
+        "lindja_e_diellit": "6:44",
+        "dreka": "14:36",
+        "ikindia": "16:59",
+        "akshami": "18:32",
+        "jacia": "10:15",
+        "gjatesia_e_dites": ""
+      }
+    },
+    "04": {
+      "data_sipas_kal_boteror": 4,
+      "dita_javes": "e martë",
+      "festat_fetare_dhe_shenime_te_tjera_astronomike": "",
+      "kohet": {
+        "imsaku": "5:07",
+        "sabahu": "5:27",
+        "lindja_e_diellit": "6:43",
+        "dreka": "14:37",
+        "ikindia": "17:00",
+        "akshami": "18:33",
+        "jacia": "10:17",
+        "gjatesia_e_dites": ""
+      }
+    },
+    "05": {
+      "data_sipas_kal_boteror": 5,
+      "dita_javes": "e mërkurë",
+      "festat_fetare_dhe_shenime_te_tjera_astronomike": "",
+      "kohet": {
+        "imsaku": "5:06",
+        "sabahu": "5:26",
+        "lindja_e_diellit": "6:42",
+        "dreka": "11:54",
+        "ikindia": "14:38",
+        "akshami": "17:02",
+        "jacia": "18:34",
+        "gjatesia_e_dites": "10:20"
+      }
+    },
+    "06": {
+      "data_sipas_kal_boteror": 6,
+      "dita_javes": "e enjte",
+      "festat_fetare_dhe_shenime_te_tjera_astronomike": "",
+      "kohet": {
+        "imsaku": "5:05",
+        "sabahu": "5:25",
+        "lindja_e_diellit": "6:41",
+        "dreka": "14:39",
+        "ikindia": "17:03",
+        "akshami": "18:35",
+        "jacia": "10:22",
+        "gjatesia_e_dites": ""
+      }
+    },
+    "07": {
+      "data_sipas_kal_boteror": 7,
+      "dita_javes": "e premte",
+      "festat_fetare_dhe_shenime_te_tjera_astronomike": "e Xhuma",
+      "kohet": {
+        "imsaku": "5:03",
+        "sabahu": "5:23",
+        "lindja_e_diellit": "6:39",
+        "dreka": "14:40",
+        "ikindia": "17:04",
+        "akshami": "18:36",
+        "jacia": "10:25",
+        "gjatesia_e_dites": ""
+      }
+    },
+    "08": {
+      "data_sipas_kal_boteror": 8,
+      "dita_javes": "e shtunë",
+      "festat_fetare_dhe_shenime_te_tjera_astronomike": "",
+      "kohet": {
+        "imsaku": "5:02",
+        "sabahu": "5:22",
+        "lindja_e_diellit": "6:38",
+        "dreka": "14:41",
+        "ikindia": "17:05",
+        "akshami": "18:37",
+        "jacia": "10:27",
+        "gjatesia_e_dites": ""
+      }
+    },
+    "09": {
+      "data_sipas_kal_boteror": 9,
+      "dita_javes": "e diel",
+      "festat_fetare_dhe_shenime_te_tjera_astronomike": "",
+      "kohet": {
+        "imsaku": "5:01",
+        "sabahu": "5:21",
+        "lindja_e_diellit": "6:37",
+        "dreka": "14:42",
+        "ikindia": "17:07",
+        "akshami": "18:39",
+        "jacia": "10:30",
+        "gjatesia_e_dites": ""
+      }
+    }
+  }
+}

@@ -1,4 +1,4 @@
-import { KosovoPrayerMonth, PrayerTimes } from '../types/prayerTimes';
+import { PrayerTimes, KosovoPrayerMonth } from '../types/prayerTimes';
 
 // Cache for prayer times to reduce data fetching
 const prayerTimesCache: Record<string, PrayerTimes[]> = {};
@@ -10,7 +10,20 @@ function convertKosovoPrayerTime(
   day: number,
   month: number,
   year: number,
-  dayData: any
+  dayData: {
+    kohet: {
+      imsaku: string;
+      sabahu: string;
+      lindja_e_diellit: string;
+      dreka: string;
+      ikindia: string;
+      akshami: string;
+      jacia: string;
+      gjatesia_e_dites: string;
+    };
+    dita_javes: string;
+    festat_fetare_dhe_shenime_te_tjera_astronomike: string;
+  }
 ): PrayerTimes {
   if (!dayData?.kohet) {
     throw new Error('Invalid prayer time data structure');
@@ -64,7 +77,7 @@ export async function getMonthPrayerTimes(
       throw new Error('Failed to fetch prayer times');
     }
     
-    const monthData = await response.json();
+    const monthData: { data: KosovoPrayerMonth } = await response.json();
     
     if (!monthData?.data) {
       throw new Error('Invalid month data structure');

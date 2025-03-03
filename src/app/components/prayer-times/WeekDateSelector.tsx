@@ -10,32 +10,38 @@ interface DateInfo {
 }
 
 interface WeekDateSelectorProps {
-  selectedDate: Date;
   onDateSelect: (date: Date) => void;
   weekDates: Date[];
   formatDate: (date: Date) => DateInfo;
 }
 
 export default function WeekDateSelector({ 
-  selectedDate, 
   onDateSelect, 
   weekDates, 
   formatDate 
 }: WeekDateSelectorProps) {
+  // Use selectedDate to determine the current week's range
+  const weekRange = `${formatDate(weekDates[0]).month} - ${formatDate(weekDates[weekDates.length - 1]).month}`;
+
   return (
     <div className="relative mb-6">
       {/* Gradient overlays for scroll indication */}
       <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white dark:from-gray-900 to-transparent pointer-events-none z-10" />
       <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white dark:from-gray-900 to-transparent pointer-events-none z-10" />
       
+      {/* Week range indicator */}
+      <div className="text-xs text-center text-gray-500 dark:text-gray-400 mb-2">
+        {weekRange}
+      </div>
+      
       {/* Scrollable container */}
       <div className="overflow-x-auto scrollbar-hide -mx-4 sm:mx-0">
         <div className="flex space-x-2 px-4 sm:px-0 py-2 min-w-max">
-          {weekDates.map((date, index) => {
+          {weekDates.map(date => {
             const formattedDate = formatDate(date);
             return (
               <button
-                key={index}
+                key={formattedDate.fullDate}
                 onClick={() => onDateSelect(date)}
                 className={`flex flex-col items-center w-14 py-1 rounded-lg transition-colors ${
                   formattedDate.isSelected 

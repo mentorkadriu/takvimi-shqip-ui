@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { PrayerTimes as PrayerTimesType } from '../../services/prayerTimes';
+import { PrayerTimes as PrayerTimesType } from '../../types/prayerTimes';
 import { 
   FajrIcon, 
   SunriseIcon, 
@@ -26,12 +26,15 @@ export default function PrayerTimesCardSVG({ prayerTimes, currentTime, isToday }
   };
 
   // Format time to 12-hour format with AM/PM
-  const formatTimeToAmPm = (time: string): string => {
-    const [hours, minutes] = time.split(':').map(Number);
-    const period = hours >= 12 ? 'PM' : 'AM';
-    const formattedHours = hours % 12 || 12;
-    return `${formattedHours}:${minutes.toString().padStart(2, '0')} ${period}`;
-  };
+  const timeFormatter = useMemo(() => {
+    function formatTimeToAmPm(time: string): string {
+      const [hours, minutes] = time.split(':').map(Number);
+      const period = hours >= 12 ? 'PM' : 'AM';
+      const formattedHours = hours % 12 || 12;
+      return `${formattedHours}:${minutes.toString().padStart(2, '0')} ${period}`;
+    }
+    return formatTimeToAmPm;
+  }, []);
 
   // Get current time in minutes
   const currentTimeInMinutes = useMemo(() => {
@@ -57,7 +60,7 @@ export default function PrayerTimesCardSVG({ prayerTimes, currentTime, isToday }
     const prayerTimesInMinutes = prayers.map(prayer => ({
       ...prayer,
       minutesSinceMidnight: timeToMinutes(prayer.time),
-      formattedTime: formatTimeToAmPm(prayer.time)
+      formattedTime: timeFormatter(prayer.time)
     }));
 
     // Calculate positions on a 24-hour scale (0-1440 minutes)
@@ -110,7 +113,7 @@ export default function PrayerTimesCardSVG({ prayerTimes, currentTime, isToday }
       timeSegments,
       currentPosition: isToday ? (currentTimeInMinutes / totalMinutesInDay) * svgWidth : null
     };
-  }, [prayerTimes, currentTimeInMinutes, isToday, formatTimeToAmPm]);
+  }, [prayerTimes, currentTimeInMinutes, isToday, timeFormatter]);
 
   if (!svgData) return null;
 
@@ -124,9 +127,9 @@ export default function PrayerTimesCardSVG({ prayerTimes, currentTime, isToday }
       {/* SVG Timeline */}
       <div className="relative h-24">
         {/* Time segments */}
-        {svgData.timeSegments.map((segment, index) => (
+        {svgData.timeSegments.map(segment => (
           <div 
-            key={index}
+            key={`segment-${segment.start}-${segment.end}`}
             className={`absolute h-1.5 rounded-full ${
               segment.isActive 
                 ? `bg-${segment.color}-500 dark:bg-${segment.color}-600` 
@@ -144,7 +147,7 @@ export default function PrayerTimesCardSVG({ prayerTimes, currentTime, isToday }
         <div className="absolute top-10 left-0 right-0 h-0.5 bg-gray-100 dark:bg-gray-700 rounded"></div>
         
         {/* Prayer time markers */}
-        {svgData.prayers.map((prayer, index) => (
+        {svgData.prayers.map(prayer => (
           <div 
             key={prayer.name}
             className="absolute top-0"

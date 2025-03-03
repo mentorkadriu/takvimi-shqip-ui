@@ -6,8 +6,10 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "setup": "node scripts/fetchPrayerTimes.js"
+    "lint": "next lint --fix",
+    "setup": "node scripts/fetchPrayerTimes.js",
+    "type-check": "tsc --noEmit",
+    "prepare": "husky install"
   },
   "dependencies": {
     "next": "15.2.0",

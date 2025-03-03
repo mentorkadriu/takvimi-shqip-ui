@@ -10,7 +10,7 @@ import {
   MaghribIcon, 
   IshaIcon 
 } from './icons';
-import { getDayPrayerTimes, KOSOVO_CITIES } from '../services/kosovoPrayerTimes';
+import { getDayPrayerTimes } from '../services/kosovoPrayerTimes';
 import { PrayerTimes as PrayerTimesType } from '../types/prayerTimes';
 
 // Import our components
@@ -22,16 +22,14 @@ import PrayerTimesList from './prayer-times/PrayerTimesList';
 import LoadingPrayerTimes from './prayer-times/LoadingPrayerTimes';
 import ErrorPrayerTimes from './prayer-times/ErrorPrayerTimes';
 
-// Define the prayer status type
-type PrayerStatus = 'past' | 'current' | 'next' | 'upcoming' | 'normal';
-
 // Define the prayer with status type
 interface PrayerWithStatus {
   name: string;
   time: string;
   label: string;
-  status: PrayerStatus;
   timeInMinutes: number;
+  isPast: boolean;
+  isCurrent: boolean;
 }
 
 export default function PrayerTimes() {
@@ -40,7 +38,7 @@ export default function PrayerTimes() {
   const [error, setError] = useState<string | null>(null);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [cityName, setCityName] = useState<string>("Prishtina");
+  const [cityName] = useState('Prishtina');
 
   // Generate week dates centered on selected date
   const weekDates = useMemo(() => {
@@ -170,7 +168,8 @@ export default function PrayerTimes() {
     if (!isToday) {
       return prayerTimesWithMinutes.map(prayer => ({
         ...prayer,
-        status: 'normal' as PrayerStatus
+        isPast: false,
+        isCurrent: false
       }));
     }
     
@@ -184,28 +183,22 @@ export default function PrayerTimes() {
     
     // Mark previous, current, and next prayers
     return prayerTimesWithMinutes.map((prayer, index) => {
-      let status: PrayerStatus = 'past';
-      
-      if (index === actualNextIndex) {
-        status = 'next';
-      } else if (index === actualNextIndex - 1 || (actualNextIndex === 0 && index === prayerTimesWithMinutes.length - 1)) {
-        status = 'current';
-      } else if (index < actualNextIndex) {
-        status = 'past';
-      } else {
-        status = 'upcoming';
-      }
+      const isPast = index < actualNextIndex;
+      const isCurrent = index === actualNextIndex - 1 || (actualNextIndex === 0 && index === prayerTimesWithMinutes.length - 1);
       
       return {
         ...prayer,
-        status
+        isPast,
+        isCurrent
       };
     });
   }, [prayerTimes, currentTime, selectedDate]);
 
   // Get the next prayer
   const nextPrayer = useMemo(() => 
-    prayerTimesWithStatus.find(prayer => prayer.status === 'next')
+    prayerTimesWithStatus.find(prayer => 
+      !prayer.isPast && !prayer.isCurrent
+    )
   , [prayerTimesWithStatus]);
 
   // Calculate time remaining until next prayer - memoized
@@ -261,16 +254,15 @@ export default function PrayerTimes() {
       />
       
       <WeekDateSelector 
-        selectedDate={selectedDate}
         onDateSelect={handleDateSelect}
         weekDates={weekDates}
         formatDate={formatDate}
       />
       
       <PrayerTimesCardSVG 
-        prayerTimes={prayerTimes} 
         currentTime={currentTime} 
         isToday={isToday} 
+        prayerTimes={prayerTimes}
       />
       
       <NextPrayerAlert 

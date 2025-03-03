@@ -5,13 +5,32 @@ import Link from 'next/link';
 import { CompassIcon, LocationIcon } from '../components/icons';
 import { getCurrentLocation, DEFAULT_COORDINATES, Coordinates } from '../services/prayerTimes';
 
+interface DeviceOrientationData {
+  alpha: number | null;
+  beta: number | null;
+  gamma: number | null;
+}
+
+interface DeviceOrientationEvent {
+  requestPermission?: () => Promise<PermissionState>;
+}
+
+interface CompassEventHandler {
+  (event: DeviceOrientationData): void;
+}
+
+declare global {
+  interface Window {
+    DeviceOrientationEvent: DeviceOrientationEvent;
+  }
+}
+
 export default function QiblaPage() {
   const [qiblaDirection, setQiblaDirection] = useState<number | null>(null);
   const [currentDirection, setCurrentDirection] = useState<number>(0);
   const [coordinates, setCoordinates] = useState<Coordinates>(DEFAULT_COORDINATES);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [hasCompass, setHasCompass] = useState(false);
   const [permissionRequested, setPermissionRequested] = useState(false);
 
   // Calculate Qibla direction - memoized with useCallback
@@ -35,7 +54,7 @@ export default function QiblaPage() {
   }, []);
 
   // Handle device orientation events
-  const handleOrientation = useCallback((event: DeviceOrientationEvent) => {
+  const handleOrientation: CompassEventHandler = useCallback((event: DeviceOrientationData) => {
     if (event.alpha !== null) {
       setCurrentDirection(event.alpha);
     }
@@ -43,17 +62,18 @@ export default function QiblaPage() {
 
   // Request device orientation permission
   const requestOrientationPermission = useCallback(async () => {
-    if (typeof (DeviceOrientationEvent as any).requestPermission === 'function') {
+    if (window.DeviceOrientationEvent?.requestPermission) {
       try {
         setPermissionRequested(true);
-        const permission = await (DeviceOrientationEvent as any).requestPermission();
+        const permission = await window.DeviceOrientationEvent.requestPermission();
         if (permission === 'granted') {
           window.addEventListener('deviceorientation', handleOrientation, true);
           setError(null);
         } else {
           setError("Permission to access device orientation was denied.");
         }
-      } catch (err) {
+      } catch (error: unknown) {
+        console.error('Error requesting permission:', error);
         setError("Error requesting device orientation permission.");
       }
     } else {
@@ -70,10 +90,8 @@ export default function QiblaPage() {
         setError(null);
         
         // Check if device has compass
-        if (window.DeviceOrientationEvent) {
-          setHasCompass(true);
-        } else {
-          setError("Your device doesn't support compass functionality.");
+        if (!window.DeviceOrientationEvent) {
+          setError("Your device doesn&apos;t support compass functionality.");
           setIsLoading(false);
           return;
         }
@@ -93,15 +111,15 @@ export default function QiblaPage() {
         setIsLoading(false);
         
         // Setup device orientation for non-iOS or if permission already granted
-        if (typeof (DeviceOrientationEvent as any).requestPermission !== 'function') {
+        if (!window.DeviceOrientationEvent?.requestPermission) {
           window.addEventListener('deviceorientation', handleOrientation, true);
         }
         
         return () => {
           window.removeEventListener('deviceorientation', handleOrientation, true);
         };
-      } catch (err) {
-        console.error('Error setting up Qibla direction:', err);
+      } catch (error: unknown) {
+        console.error('Error setting up Qibla direction:', error);
         setError('Could not determine Qibla direction. Please try again later.');
         setIsLoading(false);
       }
@@ -139,7 +157,7 @@ export default function QiblaPage() {
           ) : error ? (
             <div className="py-12 text-center">
               <p className="text-red-500 mb-4">{error}</p>
-              {typeof (DeviceOrientationEvent as any).requestPermission === 'function' && !permissionRequested && (
+              {window.DeviceOrientationEvent?.requestPermission && !permissionRequested && (
                 <button 
                   onClick={requestOrientationPermission}
                   className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
@@ -171,7 +189,7 @@ export default function QiblaPage() {
                     {/* Qibla direction indicator */}
                     <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
                       <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                        <span className="text-white text-xs">Ka'ba</span>
+                        <span className="text-white text-xs">Ka&apos;ba</span>
                       </div>
                     </div>
                     
@@ -199,9 +217,9 @@ export default function QiblaPage() {
               </div>
               
               <div className="mt-8 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-sm text-blue-800 dark:text-blue-200">
-                <p>Point your phone towards the Ka'ba and align it with the green indicator.</p>
+                <p>Point your phone towards the Ka&apos;ba and align it with the green indicator.</p>
                 <p className="mt-2">For best results, hold your device flat and away from magnetic interference.</p>
-                {typeof (DeviceOrientationEvent as any).requestPermission === 'function' && !permissionRequested && (
+                {window.DeviceOrientationEvent?.requestPermission && !permissionRequested && (
                   <button 
                     onClick={requestOrientationPermission}
                     className="mt-3 px-3 py-1.5 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors text-xs w-full"

@@ -1,5 +1,7 @@
 'use client';
 
+import { type ReactElement } from 'react';
+
 interface TimeRemaining {
   hours: number;
   minutes: number;
@@ -8,10 +10,10 @@ interface TimeRemaining {
 interface NextPrayerAlertProps {
   nextPrayer: {
     name: string;
-    label: string;
+    time: string;
   } | undefined;
   timeRemaining: TimeRemaining | null;
-  getPrayerIcon: (name: string, className?: string) => JSX.Element;
+  getPrayerIcon: (name: string, className?: string) => ReactElement;
 }
 
 export default function NextPrayerAlert({ 
@@ -22,15 +24,28 @@ export default function NextPrayerAlert({
   if (!nextPrayer || !timeRemaining) return null;
 
   return (
-    <div className="mb-6 p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg border border-emerald-100 dark:border-emerald-800">
-      <div className="flex items-center gap-2">
-        {getPrayerIcon(nextPrayer.name, 'w-5 h-5 text-emerald-600 dark:text-emerald-400')}
-        <p className="text-sm text-emerald-800 dark:text-emerald-200">
-          Next prayer: <span className="font-medium">{nextPrayer.label}</span> in{' '}
-          <span className="font-medium">
+    <div className="mb-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 border border-gray-100 dark:border-gray-700">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          {getPrayerIcon(nextPrayer.name, "w-5 h-5")}
+          <div>
+            <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">
+              Next Prayer: {nextPrayer.name}
+            </h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              {nextPrayer.time}
+            </p>
+          </div>
+        </div>
+        
+        <div className="text-right">
+          <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+            Time Remaining
+          </p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             {timeRemaining.hours}h {timeRemaining.minutes}m
-          </span>
-        </p>
+          </p>
+        </div>
       </div>
     </div>
   );

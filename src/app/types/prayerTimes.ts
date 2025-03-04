@@ -57,4 +57,5 @@ export interface PrayerWithStatus {
   time: string;
   isPast: boolean;
   isCurrent: boolean;
+  isNext: boolean;
 } 

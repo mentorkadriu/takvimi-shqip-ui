@@ -30,6 +30,7 @@ interface PrayerWithStatus {
   timeInMinutes: number;
   isPast: boolean;
   isCurrent: boolean;
+  isNext: boolean;
 }
 
 export default function PrayerTimes() {
@@ -169,7 +170,8 @@ export default function PrayerTimes() {
       return prayerTimesWithMinutes.map(prayer => ({
         ...prayer,
         isPast: false,
-        isCurrent: false
+        isCurrent: false,
+        isNext: false
       }));
     }
     
@@ -185,11 +187,13 @@ export default function PrayerTimes() {
     return prayerTimesWithMinutes.map((prayer, index) => {
       const isPast = index < actualNextIndex;
       const isCurrent = index === actualNextIndex - 1 || (actualNextIndex === 0 && index === prayerTimesWithMinutes.length - 1);
-      
+      const isNext = index === actualNextIndex;
+
       return {
         ...prayer,
         isPast,
-        isCurrent
+        isCurrent,
+        isNext
       };
     });
   }, [prayerTimes, currentTime, selectedDate]);

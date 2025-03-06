@@ -84,27 +84,8 @@ src/
 ├── public/                   # Static assets
 └── ...
 ```
+## TODO:
 
-## Performance Optimizations
-
-- Client-side caching for prayer times and location data
-- Memoization of expensive calculations
-- Optimized re-renders with React hooks
-- Responsive design for all device sizes
-- Timeout handling for API calls and geolocation
-
-## Browser Compatibility
-
-The app works best in modern browsers that support the Geolocation API and DeviceOrientation API. For the Qibla compass functionality, a device with orientation sensors (gyroscope, accelerometer) is required.
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Acknowledgements
-
-- [Aladhan API](https://aladhan.com/prayer-times-api) for providing prayer times data
-- [Next.js](https://nextjs.org/) for the React framework
-- [Tailwind CSS](https://tailwindcss.com/) for styling
-# takvimi-shqip-ui
-# takvimi-shqip-ui
+- PrayerTimesList.tsx: improve timeline from https://codepen.io/bbera/pen/gOMKYKg and make list item as card
+- Add notifications page
+- Add theme for each time

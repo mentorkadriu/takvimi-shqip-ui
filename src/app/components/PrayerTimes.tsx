@@ -35,6 +35,7 @@ interface PrayerWithStatus {
 
 export default function PrayerTimes() {
   const [prayerTimes, setPrayerTimes] = useState<PrayerTimesType | null>(null);
+  const [tomorrowImsak, setTomorrowImsak] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -78,6 +79,16 @@ export default function PrayerTimes() {
       
       const times = await getDayPrayerTimes(date);
       setPrayerTimes(times);
+      
+      // Fetch tomorrow's prayer times if today is selected
+      if (date.toDateString() === new Date().toDateString()) {
+        const tomorrow = new Date(date);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const tomorrowTimes = await getDayPrayerTimes(tomorrow);
+        setTomorrowImsak(tomorrowTimes.imsak);
+      } else {
+        setTomorrowImsak(null);
+      }
     } catch (err) {
       console.error('Error fetching prayer times:', err);
       setError('Could not load prayer times. Please try again later.');
@@ -219,8 +230,9 @@ export default function PrayerTimes() {
     
     let minutesRemaining = nextPrayer.timeInMinutes - currentTimeInMinutes;
     
-    // If next prayer is tomorrow
-    if (minutesRemaining < 0) {
+    // If next prayer is tomorrow (Imsak after Isha)
+    const currentPrayer = prayerTimesWithStatus.find(prayer => prayer.isCurrent);
+    if (minutesRemaining < 0 || (currentPrayer?.name === 'Isha' && nextPrayer.name === 'Imsak')) {
       minutesRemaining += 24 * 60; // Add 24 hours
     }
     
@@ -231,12 +243,22 @@ export default function PrayerTimes() {
       hours: hoursRemaining,
       minutes: remainingMinutes
     };
-  }, [nextPrayer, currentTime, prayerTimes, selectedDate]);
+  }, [nextPrayer, currentTime, prayerTimes, selectedDate, prayerTimesWithStatus]);
 
   // Check if the selected date is today
   const isToday = useMemo(() => 
     selectedDate.toDateString() === new Date().toDateString()
   , [selectedDate]);
+
+  // Check if we need tomorrow's Imsak
+  const needsTomorrowImsak = useMemo(() => {
+    if (!prayerTimesWithStatus.length) return false;
+    
+    const currentPrayer = prayerTimesWithStatus.find(prayer => prayer.isCurrent);
+    const nextPrayer = prayerTimesWithStatus.find(prayer => prayer.isNext);
+    
+    return currentPrayer?.name === 'Isha' && nextPrayer?.name === 'Imsak';
+  }, [prayerTimesWithStatus]);
 
   if (isLoading) {
     return <LoadingPrayerTimes />;
@@ -270,9 +292,12 @@ export default function PrayerTimes() {
       />
       
       <NextPrayerAlert 
-        nextPrayer={nextPrayer} 
+        nextPrayer={needsTomorrowImsak && tomorrowImsak && nextPrayer 
+          ? { name: nextPrayer.name || 'Imsak', time: tomorrowImsak } 
+          : nextPrayer} 
         timeRemaining={timeRemaining} 
         getPrayerIcon={getPrayerIcon} 
+        currentPrayer={prayerTimesWithStatus.find(prayer => prayer.isCurrent)?.name}
       />
       
       <PrayerTimesList 

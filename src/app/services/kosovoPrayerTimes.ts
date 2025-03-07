@@ -1,4 +1,5 @@
 import { PrayerTimes, KosovoPrayerMonth } from '../types/prayerTimes';
+import { format } from 'date-fns';
 
 // Cache for prayer times to reduce data fetching
 const prayerTimesCache: Record<string, PrayerTimes[]> = {};
@@ -109,9 +110,9 @@ export async function getDayPrayerTimes(date: Date): Promise<PrayerTimes> {
   const day = date.getDate();
   
   const monthPrayerTimes = await getMonthPrayerTimes(year, month);
-  const dayPrayerTimes = monthPrayerTimes.find(times => times.date === 
-    `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`
-  );
+  const formattedDate = format(date, 'yyyy-MM-dd');
+  
+  const dayPrayerTimes = monthPrayerTimes.find(times => times.date === formattedDate);
   
   if (!dayPrayerTimes) {
     throw new Error('Prayer times not found for the specified date');

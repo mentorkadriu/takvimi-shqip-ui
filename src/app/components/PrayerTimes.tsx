@@ -22,6 +22,18 @@ import PrayerTimesList from './prayer-times/PrayerTimesList';
 import LoadingPrayerTimes from './prayer-times/LoadingPrayerTimes';
 import ErrorPrayerTimes from './prayer-times/ErrorPrayerTimes';
 
+// Import the utility functions
+import { processPrayerTimes } from '../lib/prayerTimeUtils';
+import { 
+  getWeekDates, 
+  getDateInfo, 
+  formatTimeAmPm, 
+  isSameDay, 
+  addDays,
+  getTimeRemaining,
+  type TimeRemaining
+} from '../lib/dateUtils';
+
 // Define the prayer with status type
 interface PrayerWithStatus {
   name: string;
@@ -41,34 +53,18 @@ export default function PrayerTimes() {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [cityName] = useState('Prishtina');
+  
+  // State for week dates
+  const [weekDates, setWeekDates] = useState(() => getWeekDates(selectedDate));
 
-  // Generate week dates centered on selected date
-  const weekDates = useMemo(() => {
-    const dates = [];
-    // Start 3 days before selected date
-    const startDate = new Date(selectedDate);
-    startDate.setDate(startDate.getDate() - 3);
-    
-    // Generate 7 days
-    for (let i = 0; i < 7; i++) {
-      const date = new Date(startDate);
-      date.setDate(startDate.getDate() + i);
-      dates.push(date);
-    }
-    
-    return dates;
+  // Update week dates when selected date changes
+  useEffect(() => {
+    setWeekDates(getWeekDates(selectedDate));
   }, [selectedDate]);
 
   // Format date for display
   const formatDate = useCallback((date: Date) => {
-    return {
-      day: date.getDate(),
-      weekday: date.toLocaleDateString('en-US', { weekday: 'short' }),
-      month: date.toLocaleDateString('en-US', { month: 'short' }),
-      isToday: date.toDateString() === new Date().toDateString(),
-      isSelected: date.toDateString() === selectedDate.toDateString(),
-      fullDate: date.toISOString().split('T')[0]
-    };
+    return getDateInfo(date, selectedDate);
   }, [selectedDate]);
 
   // Fetch prayer times - optimized with useCallback
@@ -81,9 +77,8 @@ export default function PrayerTimes() {
       setPrayerTimes(times);
       
       // Fetch tomorrow's prayer times if today is selected
-      if (date.toDateString() === new Date().toDateString()) {
-        const tomorrow = new Date(date);
-        tomorrow.setDate(tomorrow.getDate() + 1);
+      if (isSameDay(date, new Date())) {
+        const tomorrow = addDays(date, 1);
         const tomorrowTimes = await getDayPrayerTimes(tomorrow);
         setTomorrowImsak(tomorrowTimes.imsak);
       } else {
@@ -101,7 +96,14 @@ export default function PrayerTimes() {
   const handleDateSelect = useCallback((date: Date) => {
     setSelectedDate(date);
     fetchPrayerTimes(date);
-  }, [fetchPrayerTimes]);
+    
+    // Update the week dates when a date is selected to keep the selected date in the middle
+    const newWeekDates = getWeekDates(date);
+    if (JSON.stringify(newWeekDates) !== JSON.stringify(weekDates)) {
+      // Only update if the dates have changed
+      setWeekDates(newWeekDates);
+    }
+  }, [fetchPrayerTimes, weekDates]);
 
   useEffect(() => {
     fetchPrayerTimes();
@@ -116,10 +118,7 @@ export default function PrayerTimes() {
 
   // Format time to 12-hour format with AM/PM - memoized
   const formatTimeToAmPm = useCallback((time: string) => {
-    const [hours, minutes] = time.split(':').map(Number);
-    const period = hours >= 12 ? 'PM' : 'AM';
-    const formattedHours = hours % 12 || 12;
-    return `${formattedHours}:${minutes.toString().padStart(2, '0')} ${period}`;
+    return formatTimeAmPm(time);
   }, []);
 
   // Get prayer icon based on name
@@ -144,111 +143,59 @@ export default function PrayerTimes() {
     }
   }, []);
 
-  // Determine which prayer time is next - memoized
-  const prayerTimesWithStatus = useMemo<PrayerWithStatus[]>(() => {
-    if (!prayerTimes) return [];
+  // Helper function to convert time string to minutes
+  const convertTimeToMinutes = (time: string): number => {
+    const [hours, minutes] = time.split(':').map(Number);
+    return hours * 60 + minutes;
+  };
+
+  // Process prayer times with status
+  const { 
+    prayersWithStatus: prayerTimesWithStatus, 
+    currentPrayer, 
+    nextPrayer,
+    isNextPrayerTomorrow
+  } = useMemo(() => {
+    if (!prayerTimes) return { 
+      prayersWithStatus: [], 
+      currentPrayer: undefined, 
+      nextPrayer: undefined,
+      isNextPrayerTomorrow: false
+    };
     
-    // Only calculate "current" and "next" status for today
-    const isToday = selectedDate.toDateString() === new Date().toDateString();
-    
-    const now = currentTime;
-    const currentHours = now.getHours();
-    const currentMinutes = now.getMinutes();
-    const currentTimeInMinutes = currentHours * 60 + currentMinutes;
-    
-    // Always include Imsak for Kosovo locations
-    const prayers = [
-      { name: 'Imsak', time: prayerTimes.imsak, label: 'Imsak' },
-      { name: 'Fajr', time: prayerTimes.fajr, label: 'Sabahu' },
-      { name: 'Sunrise', time: prayerTimes.sunrise, label: 'Lindja e Diellit' },
-      { name: 'Dhuhr', time: prayerTimes.dhuhr, label: 'Dreka' },
-      { name: 'Asr', time: prayerTimes.asr, label: 'Ikindia' },
-      { name: 'Maghrib', time: prayerTimes.maghrib, label: 'Akshami' },
-      { name: 'Isha', time: prayerTimes.isha, label: 'Jacia' }
+    // Create prayer objects from prayer times
+    const prayers: PrayerWithStatus[] = [
+      { name: 'Imsak', time: prayerTimes.imsak, label: 'Imsak', timeInMinutes: convertTimeToMinutes(prayerTimes.imsak), isPast: false, isCurrent: false, isNext: false },
+      { name: 'Fajr', time: prayerTimes.fajr, label: 'Sabahu', timeInMinutes: convertTimeToMinutes(prayerTimes.fajr), isPast: false, isCurrent: false, isNext: false },
+      { name: 'Sunrise', time: prayerTimes.sunrise, label: 'Lindja e Diellit', timeInMinutes: convertTimeToMinutes(prayerTimes.sunrise), isPast: false, isCurrent: false, isNext: false },
+      { name: 'Dhuhr', time: prayerTimes.dhuhr, label: 'Dreka', timeInMinutes: convertTimeToMinutes(prayerTimes.dhuhr), isPast: false, isCurrent: false, isNext: false },
+      { name: 'Asr', time: prayerTimes.asr, label: 'Ikindia', timeInMinutes: convertTimeToMinutes(prayerTimes.asr), isPast: false, isCurrent: false, isNext: false },
+      { name: 'Maghrib', time: prayerTimes.maghrib, label: 'Akshami', timeInMinutes: convertTimeToMinutes(prayerTimes.maghrib), isPast: false, isCurrent: false, isNext: false },
+      { name: 'Isha', time: prayerTimes.isha, label: 'Jacia', timeInMinutes: convertTimeToMinutes(prayerTimes.isha), isPast: false, isCurrent: false, isNext: false }
     ];
     
-    // Convert prayer times to minutes for comparison
-    const prayerTimesWithMinutes = prayers.map(prayer => {
-      const [hours, minutes] = prayer.time.split(':').map(Number);
-      return {
-        ...prayer,
-        timeInMinutes: hours * 60 + minutes
-      };
-    });
-    
-    // If not today, just return all prayers with no special status
-    if (!isToday) {
-      return prayerTimesWithMinutes.map(prayer => ({
-        ...prayer,
-        isPast: false,
-        isCurrent: false,
-        isNext: false
-      }));
-    }
-    
-    // Find the next prayer
-    const nextPrayerIndex = prayerTimesWithMinutes.findIndex(prayer => 
-      prayer.timeInMinutes > currentTimeInMinutes
-    );
-    
-    // If no next prayer today, the first prayer of tomorrow is next
-    const actualNextIndex = nextPrayerIndex === -1 ? 0 : nextPrayerIndex;
-    
-    // Mark previous, current, and next prayers
-    return prayerTimesWithMinutes.map((prayer, index) => {
-      const isPast = index < actualNextIndex;
-      const isCurrent = index === actualNextIndex - 1 || (actualNextIndex === 0 && index === prayerTimesWithMinutes.length - 1);
-      const isNext = index === actualNextIndex;
+    return processPrayerTimes(prayers, currentTime);
+  }, [prayerTimes, currentTime]);
 
-      return {
-        ...prayer,
-        isPast,
-        isCurrent,
-        isNext
-      };
-    });
-  }, [prayerTimes, currentTime, selectedDate]);
-
-  // Get the next prayer
-  const nextPrayer = useMemo(() => 
-    prayerTimesWithStatus.find(prayer => 
-      !prayer.isPast && !prayer.isCurrent
-    )
-  , [prayerTimesWithStatus]);
-
-  // Calculate time remaining until next prayer - memoized
+  // Calculate time remaining until next prayer
   const timeRemaining = useMemo(() => {
-    if (!nextPrayer || !prayerTimes) return null;
+    // Check if the selected date is today
+    const isToday = isSameDay(selectedDate, new Date());
     
-    // Only show time remaining for today
-    if (selectedDate.toDateString() !== new Date().toDateString()) return null;
+    if (!nextPrayer || !isToday) return null;
     
-    const now = currentTime;
-    const currentHours = now.getHours();
-    const currentMinutes = now.getMinutes();
-    const currentTimeInMinutes = currentHours * 60 + currentMinutes;
-    
-    let minutesRemaining = nextPrayer.timeInMinutes - currentTimeInMinutes;
-    
-    // If next prayer is tomorrow (Imsak after Isha)
-    const currentPrayer = prayerTimesWithStatus.find(prayer => prayer.isCurrent);
-    if (minutesRemaining < 0 || (currentPrayer?.name === 'Isha' && nextPrayer.name === 'Imsak')) {
-      minutesRemaining += 24 * 60; // Add 24 hours
+    // Ensure nextPrayer has dateTime property
+    if (nextPrayer && 'dateTime' in nextPrayer) {
+      return getTimeRemaining(nextPrayer.dateTime as Date, currentTime);
     }
     
-    const hoursRemaining = Math.floor(minutesRemaining / 60);
-    const remainingMinutes = minutesRemaining % 60;
-    
-    return {
-      hours: hoursRemaining,
-      minutes: remainingMinutes
-    };
-  }, [nextPrayer, currentTime, prayerTimes, selectedDate, prayerTimesWithStatus]);
+    return null;
+  }, [nextPrayer, currentTime, selectedDate]);
 
   // Check if the selected date is today
-  const isToday = useMemo(() => 
-    selectedDate.toDateString() === new Date().toDateString()
-  , [selectedDate]);
+  const isToday = useMemo(() => {
+    return isSameDay(selectedDate, new Date());
+  }, [selectedDate]);
 
   // Check if we need tomorrow's Imsak
   const needsTomorrowImsak = useMemo(() => {
@@ -291,19 +238,21 @@ export default function PrayerTimes() {
         prayerTimes={prayerTimes}
       />
       
-      <NextPrayerAlert 
-        nextPrayer={needsTomorrowImsak && tomorrowImsak && nextPrayer 
-          ? { name: nextPrayer.name || 'Imsak', time: tomorrowImsak } 
-          : nextPrayer} 
-        timeRemaining={timeRemaining} 
-        getPrayerIcon={getPrayerIcon} 
-        currentPrayer={prayerTimesWithStatus.find(prayer => prayer.isCurrent)?.name}
-      />
+      {isToday && nextPrayer && (
+        <NextPrayerAlert 
+          nextPrayer={nextPrayer} 
+          timeRemaining={timeRemaining}
+          getPrayerIcon={getPrayerIcon}
+          currentPrayer={currentPrayer?.name}
+          isNextPrayerTomorrow={isNextPrayerTomorrow}
+        />
+      )}
       
       <PrayerTimesList 
         prayerTimesWithStatus={prayerTimesWithStatus} 
         formatTimeToAmPm={formatTimeToAmPm} 
-        getPrayerIcon={getPrayerIcon} 
+        getPrayerIcon={getPrayerIcon}
+        isNextPrayerTomorrow={isNextPrayerTomorrow}
       />
     </section>
   );

@@ -1,11 +1,12 @@
 'use client';
 
 import { LocationIcon } from '../icons';
+import { formatDateForDisplay, parseISODate } from '../../lib/dateUtils';
 
 interface PrayerTimesHeaderProps {
   date: string;
   weekday: string;
-  islamicEvents?: string;
+  islamicEvents: string | null;
   cityName: string;
 }
 
@@ -15,12 +16,8 @@ export default function PrayerTimesHeader({
   islamicEvents,
   cityName
 }: PrayerTimesHeaderProps) {
-  // Format the date for display
-  const formattedDate = new Date(date).toLocaleDateString('sq-AL', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric'
-  });
+  // Format the date for display using date-fns
+  const formattedDate = formatDateForDisplay(parseISODate(date));
 
   // Open Google Maps with the city location
   const openGoogleMaps = () => {
@@ -45,11 +42,10 @@ export default function PrayerTimesHeader({
           <div className="font-medium">{formattedDate}</div>
         </div>
       </div>
-      {islamicEvents && (
-        <div className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-          {islamicEvents}
-        </div>
-      )}
+      {/* Always render this div with a minimum height to prevent layout shifts */}
+      <div className="text-sm text-gray-600 dark:text-gray-400 mt-2 min-h-[1.5rem]">
+        {islamicEvents || ""}
+      </div>
     </div>
   );
 } 

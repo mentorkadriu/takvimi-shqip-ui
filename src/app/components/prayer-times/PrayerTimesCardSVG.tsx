@@ -12,6 +12,9 @@ import {
   ClockIcon
 } from '../icons';
 
+// Create an Imsak icon component that reuses the FajrIcon with a different color
+const ImsakIcon = (props: any) => <FajrIcon {...props} />;
+
 interface PrayerTimesCardSVGProps {
   prayerTimes: PrayerTimesType | null;
   currentTime: Date;
@@ -48,6 +51,7 @@ export default function PrayerTimesCardSVG({ prayerTimes, currentTime, isToday }
     if (!prayerTimes) return null;
 
     const prayers = [
+      { name: 'Imsak', time: prayerTimes.imsak, icon: ImsakIcon, color: 'purple' },
       { name: 'Fajr', time: prayerTimes.fajr, icon: FajrIcon, color: 'blue' },
       { name: 'Sunrise', time: prayerTimes.sunrise, icon: SunriseIcon, color: 'amber' },
       { name: 'Dhuhr', time: prayerTimes.dhuhr, icon: DhuhrIcon, color: 'yellow' },
@@ -63,15 +67,20 @@ export default function PrayerTimesCardSVG({ prayerTimes, currentTime, isToday }
       formattedTime: timeFormatter(prayer.time)
     }));
 
+    // Sort prayers by time for proper segment calculation
+    const sortedPrayers = [...prayerTimesInMinutes].sort((a, b) => 
+      a.minutesSinceMidnight - b.minutesSinceMidnight
+    );
+
     // Calculate positions on a 24-hour scale (0-1440 minutes)
     const totalMinutesInDay = 24 * 60;
     const svgWidth = 100; // percentage width
 
     // Calculate time segments between prayers
     const timeSegments = [];
-    for (let i = 0; i < prayerTimesInMinutes.length - 1; i++) {
-      const current = prayerTimesInMinutes[i];
-      const next = prayerTimesInMinutes[i + 1];
+    for (let i = 0; i < sortedPrayers.length - 1; i++) {
+      const current = sortedPrayers[i];
+      const next = sortedPrayers[i + 1];
       
       timeSegments.push({
         start: current.minutesSinceMidnight,
@@ -85,9 +94,9 @@ export default function PrayerTimesCardSVG({ prayerTimes, currentTime, isToday }
       });
     }
 
-    // Add the last segment (Isha to Fajr next day)
-    const lastPrayer = prayerTimesInMinutes[prayerTimesInMinutes.length - 1];
-    const firstPrayer = prayerTimesInMinutes[0];
+    // Add the last segment (Isha to Imsak next day)
+    const lastPrayer = sortedPrayers[sortedPrayers.length - 1]; // Should be Isha
+    const firstPrayer = sortedPrayers[0]; // Should be Imsak
     
     timeSegments.push({
       start: lastPrayer.minutesSinceMidnight,
@@ -101,14 +110,20 @@ export default function PrayerTimesCardSVG({ prayerTimes, currentTime, isToday }
     });
 
     return {
-      prayers: prayerTimesInMinutes.map(prayer => ({
+      prayers: sortedPrayers.map(prayer => ({
         ...prayer,
         position: (prayer.minutesSinceMidnight / totalMinutesInDay) * svgWidth,
         isPast: isToday && prayer.minutesSinceMidnight < currentTimeInMinutes,
-        isCurrent: isToday && 
-          prayer.minutesSinceMidnight <= currentTimeInMinutes && 
-          (prayer === prayerTimesInMinutes[prayerTimesInMinutes.length - 1] || 
-           prayerTimesInMinutes[prayerTimesInMinutes.indexOf(prayer) + 1].minutesSinceMidnight > currentTimeInMinutes)
+        isCurrent: isToday && (
+          // Regular case: current time is between this prayer and the next
+          (prayer.minutesSinceMidnight <= currentTimeInMinutes && 
+           sortedPrayers.indexOf(prayer) < sortedPrayers.length - 1 && 
+           sortedPrayers[sortedPrayers.indexOf(prayer) + 1].minutesSinceMidnight > currentTimeInMinutes) ||
+          // Special case: current time is after the last prayer (Isha)
+          (prayer.name === 'Isha' && currentTimeInMinutes >= prayer.minutesSinceMidnight) ||
+          // Special case: current time is before the first prayer (Imsak) but after midnight
+          (prayer.name === 'Imsak' && currentTimeInMinutes < prayer.minutesSinceMidnight)
+        )
       })),
       timeSegments,
       currentPosition: isToday ? (currentTimeInMinutes / totalMinutesInDay) * svgWidth : null
@@ -121,7 +136,7 @@ export default function PrayerTimesCardSVG({ prayerTimes, currentTime, isToday }
     <div className="mb-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 border border-gray-100 dark:border-gray-700">
       <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
         <ClockIcon className="w-4 h-4" />
-        Daily Prayer Timeline
+        Imsak to Isha Prayer Timeline
       </h3>
       
       {/* SVG Timeline */}
@@ -179,7 +194,7 @@ export default function PrayerTimesCardSVG({ prayerTimes, currentTime, isToday }
                     ? `text-${prayer.color}-600 dark:text-${prayer.color}-400`
                     : `text-${prayer.color}-500 dark:text-${prayer.color}-400`
               }`}>
-                {prayer.name}
+                {prayer.name === 'Imsak' ? 'Imsak' : prayer.name}
               </span>
             </div>
             

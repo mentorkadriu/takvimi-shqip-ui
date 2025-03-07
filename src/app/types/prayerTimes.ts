@@ -55,6 +55,8 @@ export interface PrayerTimes {
 export interface PrayerWithStatus {
   name: string;
   time: string;
+  label: string;
+  timeInMinutes: number;
   isPast: boolean;
   isCurrent: boolean;
   isNext: boolean;

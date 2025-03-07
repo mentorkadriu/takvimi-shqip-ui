@@ -10,7 +10,7 @@ export default function Home() {
     <div className="grid grid-rows-[auto_1fr_auto] items-center min-h-screen p-4 sm:p-6 font-[family-name:var(--font-geist-sans)]">
       {/* Header */}
       <header className="w-full max-w-4xl mx-auto py-4">
-        <h1 className="text-2xl font-bold text-center">Takvimi Shqip</h1>
+        <h1 className="text-2xl font-bold text-center">Takvimi Shqip per Kosove 2025</h1>
         <p className="text-center text-gray-600 dark:text-gray-400">Islamic Prayer Times & Guidance</p>
       </header>
 

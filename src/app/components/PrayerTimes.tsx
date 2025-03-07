@@ -16,7 +16,6 @@ import { PrayerTimes as PrayerTimesType } from '../types/prayerTimes';
 // Import our components
 import PrayerTimesHeader from './prayer-times/PrayerTimesHeader';
 import WeekDateSelector from './prayer-times/WeekDateSelector';
-import PrayerTimesCardSVG from './prayer-times/PrayerTimesCardSVG';
 import NextPrayerAlert from './prayer-times/NextPrayerAlert';
 import PrayerTimesList from './prayer-times/PrayerTimesList';
 import LoadingPrayerTimes from './prayer-times/LoadingPrayerTimes';
@@ -208,12 +207,6 @@ export default function PrayerTimes() {
         onDateSelect={handleDateSelect}
         weekDates={weekDates}
         formatDate={formatDate}
-      />
-      
-      <PrayerTimesCardSVG 
-        currentTime={currentTime} 
-        isToday={isToday} 
-        prayerTimes={prayerTimes}
       />
       
       {isToday && nextPrayer && (

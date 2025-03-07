@@ -107,7 +107,6 @@ export async function getDayPrayerTimes(date: Date): Promise<PrayerTimes> {
   
   const year = date.getFullYear();
   const month = date.getMonth() + 1;
-  const day = date.getDate();
   
   const monthPrayerTimes = await getMonthPrayerTimes(year, month);
   const formattedDate = format(date, 'yyyy-MM-dd');

@@ -13,7 +13,7 @@ import {
 } from '../icons';
 
 // Create an Imsak icon component that reuses the FajrIcon with a different color
-const ImsakIcon = (props: any) => <FajrIcon {...props} />;
+const ImsakIcon = (props: React.ComponentProps<typeof FajrIcon>) => <FajrIcon {...props} />;
 
 interface PrayerTimesCardSVGProps {
   prayerTimes: PrayerTimesType | null;

@@ -4,8 +4,7 @@ import { type ReactElement, useEffect, useState } from 'react';
 import { PrayerWithStatus } from '../../types/prayerTimes';
 import { cn } from '../../lib/utils';
 import { 
-  processPrayerTimes,
-  PrayerWithDateTime
+  processPrayerTimes
 } from '../../lib/prayerTimeUtils';
 
 interface PrayerTimesListProps {
@@ -34,7 +33,6 @@ export default function PrayerTimesList({
   // Process prayer times using our utility functions
   const { 
     prayersWithStatus, 
-    nextPrayer,
     currentPrayer
   } = processPrayerTimes(prayerTimesWithStatus, currentTime);
   

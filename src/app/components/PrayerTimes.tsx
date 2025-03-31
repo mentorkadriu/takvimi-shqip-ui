@@ -3,17 +3,10 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { 
   ClockIcon, 
-  FajrIcon, 
-  SunriseIcon, 
-  DhuhrIcon, 
-  AsrIcon, 
-  MaghribIcon, 
-  IshaIcon 
 } from './icons';
 import { getDayPrayerTimes } from '../services/kosovoPrayerTimes';
 import { PrayerTimes as PrayerTimesType } from '../types/prayerTimes';
 
-// Import our components
 import PrayerTimesHeader from './prayer-times/PrayerTimesHeader';
 import WeekDateSelector from './prayer-times/WeekDateSelector';
 import NextPrayerAlert from './prayer-times/NextPrayerAlert';
@@ -21,7 +14,6 @@ import PrayerTimesList from './prayer-times/PrayerTimesList';
 import LoadingPrayerTimes from './prayer-times/LoadingPrayerTimes';
 import ErrorPrayerTimes from './prayer-times/ErrorPrayerTimes';
 
-// Import the utility functions
 import { processPrayerTimes } from '../lib/prayerTimeUtils';
 import { 
   getWeekDates, 
@@ -30,8 +22,8 @@ import {
   isSameDay, 
   getTimeRemaining
 } from '../lib/dateUtils';
+import Image from 'next/image';
 
-// Define the prayer with status type
 interface PrayerWithStatus {
   name: string;
   time: string;
@@ -50,20 +42,16 @@ export default function PrayerTimes() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [cityName] = useState('Prishtina');
   
-  // State for week dates
   const [weekDates, setWeekDates] = useState(() => getWeekDates(selectedDate));
 
-  // Update week dates when selected date changes
   useEffect(() => {
     setWeekDates(getWeekDates(selectedDate));
   }, [selectedDate]);
 
-  // Format date for display
   const formatDate = useCallback((date: Date) => {
     return getDateInfo(date, selectedDate);
   }, [selectedDate]);
 
-  // Fetch prayer times - optimized with useCallback
   const fetchPrayerTimes = useCallback(async (date: Date = selectedDate) => {
     try {
       setIsLoading(true);
@@ -79,15 +67,12 @@ export default function PrayerTimes() {
     }
   }, [selectedDate]);
 
-  // Handle date selection
   const handleDateSelect = useCallback((date: Date) => {
     setSelectedDate(date);
     fetchPrayerTimes(date);
     
-    // Update the week dates when a date is selected to keep the selected date in the middle
     const newWeekDates = getWeekDates(date);
     if (JSON.stringify(newWeekDates) !== JSON.stringify(weekDates)) {
-      // Only update if the dates have changed
       setWeekDates(newWeekDates);
     }
   }, [fetchPrayerTimes, weekDates]);
@@ -95,7 +80,6 @@ export default function PrayerTimes() {
   useEffect(() => {
     fetchPrayerTimes();
     
-    // Update current time every minute
     const intervalId = setInterval(() => {
       setCurrentTime(new Date());
     }, 60000);
@@ -103,40 +87,36 @@ export default function PrayerTimes() {
     return () => clearInterval(intervalId);
   }, [fetchPrayerTimes]);
 
-  // Format time to 12-hour format with AM/PM - memoized
   const formatTimeToAmPm = useCallback((time: string) => {
     return formatTimeAmPm(time);
   }, []);
 
-  // Get prayer icon based on name
   const getPrayerIcon = useCallback((name: string, className: string = 'w-5 h-5') => {
     switch (name) {
       case 'Imsak':
-        return <FajrIcon className={className} />; // Using FajrIcon for Imsak as they're similar
+        return <div className="w-10 h-10"><Image src="/other-icons/fajr.png" alt="Imsak" width={512} height={512} /></div>
       case 'Fajr':
-        return <FajrIcon className={className} />;
+        return <Image src="/other-icons/fajr.png" alt="Fajr" width={40} height={40} />;
       case 'Sunrise':
-        return <SunriseIcon className={className} />;
+        return <Image src="/other-icons/lindja-diellit.png" alt="Sunrise" width={40} height={40} />;
       case 'Dhuhr':
-        return <DhuhrIcon className={className} />;
+        return <Image src="/other-icons/dhuhr.png" alt="Dhuhr" width={40} height={40} />;
       case 'Asr':
-        return <AsrIcon className={className} />;
+        return <Image src="/other-icons/asr.png" alt="Asr" width={40} height={40} />;
       case 'Maghrib':
-        return <MaghribIcon className={className} />;
+        return <Image src="/other-icons/iftar.png" alt="Maghrib" width={40} height={40} />;
       case 'Isha':
-        return <IshaIcon className={className} />;
+        return <Image src="/other-icons/isha.png" alt="Isha" width={40} height={40} />;
       default:
         return <ClockIcon className={className} />;
     }
   }, []);
 
-  // Helper function to convert time string to minutes
   const convertTimeToMinutes = (time: string): number => {
     const [hours, minutes] = time.split(':').map(Number);
     return hours * 60 + minutes;
   };
 
-  // Process prayer times with status
   const { 
     prayersWithStatus: prayerTimesWithStatus, 
     currentPrayer, 
@@ -150,7 +130,6 @@ export default function PrayerTimes() {
       isNextPrayerTomorrow: false
     };
     
-    // Create prayer objects from prayer times
     const prayers: PrayerWithStatus[] = [
       { name: 'Imsak', time: prayerTimes.imsak, label: 'Imsak', timeInMinutes: convertTimeToMinutes(prayerTimes.imsak), isPast: false, isCurrent: false, isNext: false },
       { name: 'Fajr', time: prayerTimes.fajr, label: 'Sabahu', timeInMinutes: convertTimeToMinutes(prayerTimes.fajr), isPast: false, isCurrent: false, isNext: false },
@@ -164,14 +143,11 @@ export default function PrayerTimes() {
     return processPrayerTimes(prayers, currentTime);
   }, [prayerTimes, currentTime]);
 
-  // Calculate time remaining until next prayer
   const timeRemaining = useMemo(() => {
-    // Check if the selected date is today
     const isToday = isSameDay(selectedDate, new Date());
     
     if (!nextPrayer || !isToday) return null;
     
-    // Ensure nextPrayer has dateTime property
     if (nextPrayer && 'dateTime' in nextPrayer) {
       return getTimeRemaining(nextPrayer.dateTime as Date, currentTime);
     }
@@ -179,7 +155,6 @@ export default function PrayerTimes() {
     return null;
   }, [nextPrayer, currentTime, selectedDate]);
 
-  // Check if the selected date is today
   const isToday = useMemo(() => {
     return isSameDay(selectedDate, new Date());
   }, [selectedDate]);
@@ -224,6 +199,7 @@ export default function PrayerTimes() {
         formatTimeToAmPm={formatTimeToAmPm} 
         getPrayerIcon={getPrayerIcon}
         isNextPrayerTomorrow={isNextPrayerTomorrow}
+        isToday={isToday}
       />
     </section>
   );

@@ -89,3 +89,5 @@ src/
 - PrayerTimesList.tsx: improve timeline from https://codepen.io/bbera/pen/gOMKYKg and make list item as card
 - Add notifications page
 - Add theme for each time
+
+icons: https://www.flaticon.com/packs/ramadan-kareem-15993742/2

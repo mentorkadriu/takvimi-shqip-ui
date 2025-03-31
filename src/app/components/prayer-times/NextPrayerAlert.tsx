@@ -27,14 +27,11 @@ export default function NextPrayerAlert({
 }: NextPrayerAlertProps) {
   if (!nextPrayer || !timeRemaining) return null;
 
-  // Use the isNextPrayerTomorrow prop instead of calculating it here
   const timePrefix = isNextPrayerTomorrow ? 'Neser' : 'Sot';
   
-  // Special message for Imsak
   const isImsakNext = nextPrayer.name === 'Imsak';
   const isIshaCurrentAndImsakNext = currentPrayer === 'Isha' && isImsakNext;
   
-  // Custom message for when Imsak is next after Isha
   const customMessage = isIshaCurrentAndImsakNext 
     ? 'Koha e Imsakut fillon pas Jacisë'
     : undefined;

@@ -5,9 +5,9 @@ import PWAInstall from "./components/PWAInstall";
 import OfflineNotification from "./components/OfflineNotification";
 
 export const metadata: Metadata = {
-  title: "Takvimi Shqip - Islamic Prayer Times",
-  description: "Islamic prayer times and Qibla direction for Muslims",
-  keywords: ["prayer times", "qibla", "albania", "kosovo", "islamic app"],
+  title: "Takvimi Shqip - Kohet e Namazit",
+  description: "Kohet e namazit dhe drejtimi i Kiblës për Kosovë dhe Shqipëri",
+  keywords: ["prayer times", "kohet e namazit", "takvim", "qibla", "kosove", "shqiperi", "islamic app"],
   manifest: "/manifest.json",
   icons: {
     apple: [

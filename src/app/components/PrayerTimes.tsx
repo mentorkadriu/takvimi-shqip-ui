@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { 
   ClockIcon, 
 } from './icons';
-import { getDayPrayerTimes } from '../services/kosovoPrayerTimes';
+import { getDayPrayerTimes, CITY_OFFSETS, applyCityOffset } from '../services/kosovoPrayerTimes';
 import { PrayerTimes as PrayerTimesType } from '../types/prayerTimes';
 
 import PrayerTimesHeader from './prayer-times/PrayerTimesHeader';
@@ -40,7 +40,18 @@ export default function PrayerTimes() {
   const [error, setError] = useState<string | null>(null);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [cityName] = useState('Prishtina');
+  const [cityName, setCityName] = useState('Prishtina');
+
+  // Load persisted city from localStorage after mount (avoids SSR mismatch)
+  useEffect(() => {
+    const saved = localStorage.getItem('selectedCity');
+    if (saved) setCityName(saved);
+  }, []);
+
+  const handleCityChange = useCallback((city: string) => {
+    setCityName(city);
+    localStorage.setItem('selectedCity', city);
+  }, []);
   
   const [weekDates, setWeekDates] = useState(() => getWeekDates(selectedDate));
 
@@ -117,31 +128,35 @@ export default function PrayerTimes() {
     return hours * 60 + minutes;
   };
 
-  const { 
-    prayersWithStatus: prayerTimesWithStatus, 
-    currentPrayer, 
+  const {
+    prayersWithStatus: prayerTimesWithStatus,
+    currentPrayer,
     nextPrayer,
     isNextPrayerTomorrow
   } = useMemo(() => {
-    if (!prayerTimes) return { 
-      prayersWithStatus: [], 
-      currentPrayer: undefined, 
+    if (!prayerTimes) return {
+      prayersWithStatus: [],
+      currentPrayer: undefined,
       nextPrayer: undefined,
       isNextPrayerTomorrow: false
     };
-    
+
+    // Apply the selected city's minute offset to every prayer time
+    const offset = CITY_OFFSETS[cityName] ?? 0;
+    const t = (raw: string) => applyCityOffset(raw, offset);
+
     const prayers: PrayerWithStatus[] = [
-      { name: 'Imsak', time: prayerTimes.imsak, label: 'Imsak', timeInMinutes: convertTimeToMinutes(prayerTimes.imsak), isPast: false, isCurrent: false, isNext: false },
-      { name: 'Fajr', time: prayerTimes.fajr, label: 'Sabahu', timeInMinutes: convertTimeToMinutes(prayerTimes.fajr), isPast: false, isCurrent: false, isNext: false },
-      { name: 'Sunrise', time: prayerTimes.sunrise, label: 'Lindja e Diellit', timeInMinutes: convertTimeToMinutes(prayerTimes.sunrise), isPast: false, isCurrent: false, isNext: false },
-      { name: 'Dhuhr', time: prayerTimes.dhuhr, label: 'Dreka', timeInMinutes: convertTimeToMinutes(prayerTimes.dhuhr), isPast: false, isCurrent: false, isNext: false },
-      { name: 'Asr', time: prayerTimes.asr, label: 'Ikindia', timeInMinutes: convertTimeToMinutes(prayerTimes.asr), isPast: false, isCurrent: false, isNext: false },
-      { name: 'Maghrib', time: prayerTimes.maghrib, label: 'Akshami', timeInMinutes: convertTimeToMinutes(prayerTimes.maghrib), isPast: false, isCurrent: false, isNext: false },
-      { name: 'Isha', time: prayerTimes.isha, label: 'Jacia', timeInMinutes: convertTimeToMinutes(prayerTimes.isha), isPast: false, isCurrent: false, isNext: false }
+      { name: 'Imsak',   time: t(prayerTimes.imsak),   label: 'Imsak',             timeInMinutes: convertTimeToMinutes(t(prayerTimes.imsak)),   isPast: false, isCurrent: false, isNext: false },
+      { name: 'Fajr',    time: t(prayerTimes.fajr),    label: 'Sabahu',            timeInMinutes: convertTimeToMinutes(t(prayerTimes.fajr)),    isPast: false, isCurrent: false, isNext: false },
+      { name: 'Sunrise', time: t(prayerTimes.sunrise), label: 'Lindja e Diellit',  timeInMinutes: convertTimeToMinutes(t(prayerTimes.sunrise)), isPast: false, isCurrent: false, isNext: false },
+      { name: 'Dhuhr',   time: t(prayerTimes.dhuhr),   label: 'Dreka',             timeInMinutes: convertTimeToMinutes(t(prayerTimes.dhuhr)),   isPast: false, isCurrent: false, isNext: false },
+      { name: 'Asr',     time: t(prayerTimes.asr),     label: 'Ikindia',           timeInMinutes: convertTimeToMinutes(t(prayerTimes.asr)),     isPast: false, isCurrent: false, isNext: false },
+      { name: 'Maghrib', time: t(prayerTimes.maghrib), label: 'Akshami',           timeInMinutes: convertTimeToMinutes(t(prayerTimes.maghrib)), isPast: false, isCurrent: false, isNext: false },
+      { name: 'Isha',    time: t(prayerTimes.isha),    label: 'Jacia',             timeInMinutes: convertTimeToMinutes(t(prayerTimes.isha)),    isPast: false, isCurrent: false, isNext: false },
     ];
-    
+
     return processPrayerTimes(prayers, currentTime);
-  }, [prayerTimes, currentTime]);
+  }, [prayerTimes, currentTime, cityName]);
 
   const timeRemaining = useMemo(() => {
     const isToday = isSameDay(selectedDate, new Date());
@@ -171,11 +186,12 @@ export default function PrayerTimes() {
 
   return (
     <section className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 sm:p-6">
-      <PrayerTimesHeader 
+      <PrayerTimesHeader
         date={prayerTimes.date}
         weekday={prayerTimes.weekday}
         islamicEvents={prayerTimes.islamicEvents}
         cityName={cityName}
+        onCityChange={handleCityChange}
       />
       
       <WeekDateSelector 

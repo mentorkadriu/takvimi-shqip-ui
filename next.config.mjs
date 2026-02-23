@@ -8,6 +8,18 @@ const withPWA = withPWAInit({
   disable: process.env.NODE_ENV === 'development',
   runtimeCaching: [
     {
+      // Prayer times data — CacheFirst so it works fully offline after first load
+      urlPattern: /\/data\/kosovo-prayer-times\.json$/i,
+      handler: 'CacheFirst',
+      options: {
+        cacheName: 'prayer-times-data',
+        expiration: {
+          maxEntries: 1,
+          maxAgeSeconds: 365 * 24 * 60 * 60 // 1 year (data is year-agnostic)
+        }
+      }
+    },
+    {
       urlPattern: /^https:\/\/fonts\.(?:googleapis|gstatic)\.com\/.*/i,
       handler: 'CacheFirst',
       options: {

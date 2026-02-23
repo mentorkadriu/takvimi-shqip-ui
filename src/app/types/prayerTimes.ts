@@ -1,3 +1,26 @@
+// New format from drilonjaha/kohet-e-namazit-kosove-json
+export interface NewPrayerDay {
+  day: number;
+  date: string;
+  day_of_week: string;
+  imsak: string;
+  fajr: string;
+  sunrise: string;
+  dhuhr: string;
+  asr: string;
+  maghrib: string;
+  isha: string;
+  day_length: string;
+}
+
+export interface NewPrayerTimesData {
+  metadata: Record<string, unknown>;
+  prayer_times: {
+    [month: string]: NewPrayerDay[];
+  };
+}
+
+// Legacy format (kept for reference)
 export interface KosovoPrayerTime {
   imsaku: string;
   sabahu: string;

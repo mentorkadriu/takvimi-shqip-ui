@@ -1,148 +1,116 @@
-import { PrayerTimes, KosovoPrayerMonth } from '../types/prayerTimes';
+import { PrayerTimes, NewPrayerTimesData, NewPrayerDay } from '../types/prayerTimes';
 import { format } from 'date-fns';
 
-// Cache for prayer times to reduce data fetching
-const prayerTimesCache: Record<string, PrayerTimes[]> = {};
+// English month names matching the JSON keys from drilonjaha/kohet-e-namazit-kosove-json
+const MONTH_NAMES = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December'
+];
+
+// Cache for the full dataset (loaded once)
+let dataCache: NewPrayerTimesData | null = null;
+
+// Cache for processed month arrays
+const monthCache: Record<string, PrayerTimes[]> = {};
 
 /**
- * Converts Kosovo prayer time format to standard format
+ * Load the single prayer times JSON file (year-agnostic data from BIK)
  */
-function convertKosovoPrayerTime(
-  day: number,
-  month: number,
-  year: number,
-  dayData: {
-    kohet: {
-      imsaku: string;
-      sabahu: string;
-      lindja_e_diellit: string;
-      dreka: string;
-      ikindia: string;
-      akshami: string;
-      jacia: string;
-      gjatesia_e_dites: string;
-    };
-    dita_javes: string;
-    festat_fetare_dhe_shenime_te_tjera_astronomike: string;
-  }
-): PrayerTimes {
-  if (!dayData?.kohet) {
-    throw new Error('Invalid prayer time data structure');
+async function loadPrayerData(): Promise<NewPrayerTimesData> {
+  if (dataCache) return dataCache;
+
+  const response = await fetch('/data/kosovo-prayer-times.json');
+  if (!response.ok) {
+    throw new Error('Failed to load prayer times data');
   }
 
+  dataCache = await response.json() as NewPrayerTimesData;
+  return dataCache;
+}
+
+/**
+ * Convert a day entry from the new format to the standard PrayerTimes interface
+ */
+function convertDay(
+  dayData: NewPrayerDay,
+  month: number,
+  year: number
+): PrayerTimes {
   return {
-    imsak: dayData.kohet.imsaku,
-    fajr: dayData.kohet.sabahu,
-    sunrise: dayData.kohet.lindja_e_diellit,
-    dhuhr: dayData.kohet.dreka,
-    asr: dayData.kohet.ikindia,
-    maghrib: dayData.kohet.akshami,
-    isha: dayData.kohet.jacia,
-    date: `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`,
-    dayLength: dayData.kohet.gjatesia_e_dites,
-    islamicEvents: dayData.festat_fetare_dhe_shenime_te_tjera_astronomike,
-    weekday: dayData.dita_javes
+    imsak: dayData.imsak,
+    fajr: dayData.fajr,
+    sunrise: dayData.sunrise,
+    dhuhr: dayData.dhuhr,
+    asr: dayData.asr,
+    maghrib: dayData.maghrib,
+    isha: dayData.isha,
+    // Build the date string using the actual requested year (data is year-agnostic)
+    date: `${year}-${month.toString().padStart(2, '0')}-${dayData.day.toString().padStart(2, '0')}`,
+    dayLength: dayData.day_length,
+    islamicEvents: '',
+    weekday: dayData.day_of_week,
   };
 }
 
 /**
- * Validates the date is within available range
- */
-function validateDate(date: Date): void {
-  const year = date.getFullYear();
-  if (year !== 2025) {
-    throw new Error('Prayer times are only available for year 2025');
-  }
-}
-
-/**
- * Fetches prayer times for a specific month and year
+ * Get prayer times for all days in a given month and year
  */
 export async function getMonthPrayerTimes(
   year: number,
   month: number
 ): Promise<PrayerTimes[]> {
-  validateDate(new Date(year, month - 1));
-  
   const cacheKey = `${year}-${month}`;
-  
-  // Return cached data if available
-  if (prayerTimesCache[cacheKey]) {
-    return prayerTimesCache[cacheKey];
+  if (monthCache[cacheKey]) return monthCache[cacheKey];
+
+  const data = await loadPrayerData();
+  const monthName = MONTH_NAMES[month - 1];
+
+  if (!data.prayer_times[monthName]) {
+    throw new Error(`No prayer times found for ${monthName}`);
   }
-  
-  try {
-    const response = await fetch(`/data/takvimi/${year}/${month.toString().padStart(2, '0')}.json`);
-    
-    if (!response.ok) {
-      throw new Error('Failed to fetch prayer times');
-    }
-    
-    const monthData: { data: KosovoPrayerMonth } = await response.json();
-    
-    if (!monthData?.data) {
-      throw new Error('Invalid month data structure');
-    }
-    
-    // Convert the data to our standard format
-    const prayerTimes = Object.entries(monthData.data).map(([day, dayData]) => 
-      convertKosovoPrayerTime(parseInt(day), month, year, dayData)
-    );
-    
-    // Cache the results
-    prayerTimesCache[cacheKey] = prayerTimes;
-    
-    return prayerTimes;
-  } catch (error) {
-    console.error('Error fetching prayer times:', error);
-    throw error;
-  }
+
+  const result = data.prayer_times[monthName].map((day) =>
+    convertDay(day, month, year)
+  );
+
+  monthCache[cacheKey] = result;
+  return result;
 }
 
 /**
- * Gets prayer times for a specific date
+ * Get prayer times for a specific date
  */
 export async function getDayPrayerTimes(date: Date): Promise<PrayerTimes> {
-  validateDate(date);
-  
   const year = date.getFullYear();
   const month = date.getMonth() + 1;
-  
+
   const monthPrayerTimes = await getMonthPrayerTimes(year, month);
   const formattedDate = format(date, 'yyyy-MM-dd');
-  
-  const dayPrayerTimes = monthPrayerTimes.find(times => times.date === formattedDate);
-  
+
+  const dayPrayerTimes = monthPrayerTimes.find((t) => t.date === formattedDate);
   if (!dayPrayerTimes) {
-    throw new Error('Prayer times not found for the specified date');
+    throw new Error(`Prayer times not found for ${formattedDate}`);
   }
-  
+
   return dayPrayerTimes;
 }
 
 /**
- * Gets prayer times for a week centered on the specified date
+ * Get prayer times for a week centered on the specified date
  */
 export async function getWeekPrayerTimes(centerDate: Date): Promise<PrayerTimes[]> {
-  validateDate(centerDate);
-  
-  // Get dates for 3 days before and 3 days after
-  const dates = [];
+  const dates: Date[] = [];
   for (let i = -3; i <= 3; i++) {
-    const date = new Date(centerDate);
-    date.setDate(centerDate.getDate() + i);
-    dates.push(date);
+    const d = new Date(centerDate);
+    d.setDate(centerDate.getDate() + i);
+    dates.push(d);
   }
-  
-  // Fetch prayer times for all dates
-  const prayerTimes = await Promise.all(
-    dates.map(date => getDayPrayerTimes(date))
-  );
-  
-  return prayerTimes;
+
+  return Promise.all(dates.map((d) => getDayPrayerTimes(d)));
 }
 
-// List of available cities in Kosovo
+// List of available cities in Kosovo with their minute offsets
+// Source: drilonjaha/kohet-e-namazit-kosove-json README
 export const KOSOVO_CITIES = [
   'Prishtina',
   'Prizren',
@@ -155,5 +123,29 @@ export const KOSOVO_CITIES = [
   'Vushtrri',
   'Podujeva',
   'Sharri',
-  'Presheva'
-]; 
+  'Presheva',
+];
+
+// City offsets in minutes relative to the base (Deçan reference)
+export const CITY_OFFSETS: Record<string, number> = {
+  Sharri: +2,
+  Presheva: -2,
+  Ferizaj: -1,
+  Gjilan: -1,
+  Prishtina: -1,
+  Podujeva: -1,
+  Vushtrri: -1,
+  // Deçan, Peja, Prizren, Gjakova, Mitrovica: 0 (base)
+};
+
+/**
+ * Apply a city's minute offset to a prayer time string (H:MM or HH:MM)
+ */
+export function applyCityOffset(time: string, offsetMinutes: number): string {
+  if (offsetMinutes === 0) return time;
+  const [h, m] = time.split(':').map(Number);
+  const total = h * 60 + m + offsetMinutes;
+  const hh = Math.floor(total / 60) % 24;
+  const mm = total % 60;
+  return `${hh}:${mm.toString().padStart(2, '0')}`;
+}

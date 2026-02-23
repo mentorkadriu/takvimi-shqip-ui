@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @plugin 'tailwindcss-animate';
 
@@ -121,4 +121,24 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* App-level overrides */
+html {
+  font-size: 17px; /* slightly larger base for readability */
+}
+
+body {
+  background-color: rgb(241 245 249); /* slate-100 */
+  font-family:
+    var(--font-inter),
+    system-ui,
+    -apple-system,
+    sans-serif;
+}
+
+/* Smooth press feedback on buttons/links */
+button:active:not([disabled]),
+a:active {
+  transform: scale(0.97);
 }

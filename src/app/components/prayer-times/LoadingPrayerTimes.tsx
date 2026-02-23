@@ -1,85 +1,48 @@
 'use client';
 
-import { LocationIcon } from '../icons';
-
 export default function LoadingPrayerTimes() {
   return (
-    <section className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 sm:p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-semibold flex items-center gap-2">
-          <LocationIcon className="w-5 h-5" />
-          <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-24 animate-pulse"></div>
-        </h2>
-        <span className="text-sm text-gray-500 dark:text-gray-400">Loading...</span>
+    <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
+      {/* Header skeleton */}
+      <div className="bg-slate-800 px-5 pt-5 pb-4 animate-pulse">
+        <div className="flex justify-between">
+          <div className="h-6 bg-slate-600 rounded-lg w-28" />
+          <div className="text-right space-y-1.5">
+            <div className="h-3 bg-slate-600 rounded w-16 ml-auto" />
+            <div className="h-4 bg-slate-600 rounded w-24 ml-auto" />
+          </div>
+        </div>
+        <div className="h-px bg-slate-700 mt-4 -mx-5" />
       </div>
-      
-      {/* Loading placeholder for date selector */}
-      <div className="mb-6 overflow-x-auto pb-2">
-        <div className="flex space-x-2 min-w-max">
+
+      {/* Body skeleton */}
+      <div className="px-4 pb-4 pt-3 space-y-3">
+        {/* Date selector */}
+        <div className="grid grid-cols-7 gap-1 animate-pulse">
           {[...Array(7)].map((_, i) => (
-            <div key={i} className="animate-pulse flex flex-col items-center w-14">
-              <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-8 mb-1"></div>
-              <div className="h-10 w-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center mb-1"></div>
-              <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-6"></div>
+            <div key={i} className="flex flex-col items-center gap-1 py-1.5">
+              <div className="h-2.5 bg-slate-100 dark:bg-slate-700 rounded w-5" />
+              <div className="h-7 w-7 bg-slate-100 dark:bg-slate-700 rounded-full" />
+              <div className="h-2 bg-slate-100 dark:bg-slate-700 rounded w-4" />
             </div>
           ))}
         </div>
+
+        {/* Countdown card */}
+        <div className="h-16 bg-emerald-50 dark:bg-emerald-950/30 rounded-xl border border-emerald-100 dark:border-emerald-800/40 animate-pulse" />
+
+        {/* Prayer rows */}
+        {[...Array(7)].map((_, i) => (
+          <div
+            key={i}
+            className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl border border-slate-100 dark:border-slate-700/50 animate-pulse"
+          >
+            <div className="w-9 h-9 bg-slate-100 dark:bg-slate-700 rounded-xl shrink-0" />
+            <div className="flex-1 h-4 bg-slate-100 dark:bg-slate-700 rounded-lg" />
+            <div className="h-4 w-16 bg-slate-100 dark:bg-slate-700 rounded-lg" />
+          </div>
+        ))}
       </div>
-      
-      {/* Loading placeholder for Prayer Times Card SVG */}
-      <div className="mb-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 border border-gray-100 dark:border-gray-700 animate-pulse">
-        <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-40 mb-3"></div>
-        <div className="relative h-16">
-          <div className="absolute top-8 left-0 right-0 h-1 bg-gray-200 dark:bg-gray-700 rounded"></div>
-          {[...Array(6)].map((_, i) => (
-            <div 
-              key={i}
-              className="absolute top-0"
-              style={{ left: `${i * 20}%` }}
-            >
-              <div className="flex items-center justify-center w-8 h-8 rounded-full border-2 bg-gray-200 border-gray-100 dark:bg-gray-700 dark:border-gray-600"></div>
-              <div className="absolute top-10 -translate-x-1/2 w-16">
-                <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-10 mx-auto"></div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-      
-      {/* Loading placeholder for next prayer alert */}
-      <div className="mb-6 p-3 bg-gray-50 dark:bg-gray-700/20 rounded-lg border border-gray-100 dark:border-gray-700 animate-pulse">
-        <div className="flex items-center gap-2">
-          <div className="w-5 h-5 bg-gray-200 dark:bg-gray-700 rounded"></div>
-          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
-        </div>
-      </div>
-      
-      {/* Loading placeholder for timeline */}
-      <div className="relative">
-        {/* Vertical timeline line */}
-        <div className="absolute left-3 top-4 bottom-4 w-0.5 bg-gray-200 dark:bg-gray-700"></div>
-        
-        {/* Prayer time cards with timeline bullets */}
-        <div className="space-y-4">
-          {[...Array(6)].map((_, i) => (
-            <div 
-              key={i}
-              className="relative pl-8 pr-4 py-3 rounded-lg shadow-sm border bg-white border-gray-100 dark:bg-gray-800 dark:border-gray-700"
-            >
-              {/* Timeline bullet */}
-              <div className="absolute left-1 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full border-2 bg-gray-200 border-gray-100 dark:bg-gray-700 dark:border-gray-600"></div>
-              
-              <div className="flex justify-between items-center">
-                <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 bg-gray-200 dark:bg-gray-700 rounded"></div>
-                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
-                </div>
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
+    </div>
   );
-} 
+}

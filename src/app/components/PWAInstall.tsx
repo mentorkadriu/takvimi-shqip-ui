@@ -44,17 +44,17 @@ export default function PWAInstall() {
 
     // Show the install prompt
     await installPrompt.prompt();
-    
+
     // Wait for the user to respond to the prompt
     const choiceResult = await installPrompt.userChoice;
-    
+
     if (choiceResult.outcome === 'accepted') {
       console.log('User accepted the install prompt');
       setIsInstalled(true);
     } else {
       console.log('User dismissed the install prompt');
     }
-    
+
     // Clear the saved prompt
     setInstallPrompt(null);
   };
@@ -73,4 +73,4 @@ export default function PWAInstall() {
       </button>
     </div>
   );
-} 
+}

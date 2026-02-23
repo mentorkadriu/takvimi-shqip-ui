@@ -25,7 +25,9 @@ export default function CitySelector({
     } else {
       document.body.style.overflow = '';
     }
-    return () => { document.body.style.overflow = ''; };
+    return () => {
+      document.body.style.overflow = '';
+    };
   }, [isOpen]);
 
   if (!isOpen) return null;
@@ -74,7 +76,10 @@ export default function CitySelector({
             return (
               <button
                 key={city}
-                onClick={() => { onSelect(city); onClose(); }}
+                onClick={() => {
+                  onSelect(city);
+                  onClose();
+                }}
                 className={cn(
                   'flex items-center justify-between px-3.5 py-3 rounded-xl border text-sm font-medium transition-all active:scale-95',
                   isSelected
@@ -86,12 +91,14 @@ export default function CitySelector({
 
                 <span className="flex items-center gap-1">
                   {offset !== 0 && (
-                    <span className={cn(
-                      'text-xs px-1.5 py-0.5 rounded-md font-normal',
-                      offset > 0
-                        ? 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400'
-                        : 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
-                    )}>
+                    <span
+                      className={cn(
+                        'text-xs px-1.5 py-0.5 rounded-md font-normal',
+                        offset > 0
+                          ? 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400'
+                          : 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
+                      )}
+                    >
                       {offset > 0 ? `+${offset}m` : `${offset}m`}
                     </span>
                   )}

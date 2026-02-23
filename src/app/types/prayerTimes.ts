@@ -83,4 +83,4 @@ export interface PrayerWithStatus {
   isPast: boolean;
   isCurrent: boolean;
   isNext: boolean;
-} 
+}

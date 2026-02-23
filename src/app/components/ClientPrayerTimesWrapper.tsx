@@ -7,9 +7,9 @@ import LoadingPrayerTimes from './prayer-times/LoadingPrayerTimes';
 // This is necessary because it uses browser APIs like geolocation
 const PrayerTimes = dynamic(() => import('./PrayerTimes'), {
   ssr: false,
-  loading: () => <LoadingPrayerTimes />
+  loading: () => <LoadingPrayerTimes />,
 });
 
 export default function ClientPrayerTimesWrapper() {
   return <PrayerTimes />;
-} 
+}

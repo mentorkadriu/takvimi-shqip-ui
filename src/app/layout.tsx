@@ -1,14 +1,29 @@
-import type { Metadata, Viewport } from "next";
-import "./globals.css";
-import ServiceWorkerRegistration from "./components/ServiceWorkerRegistration";
-import PWAInstall from "./components/PWAInstall";
-import OfflineNotification from "./components/OfflineNotification";
+import type { Metadata, Viewport } from 'next';
+import { Inter } from 'next/font/google';
+import './globals.css';
+import ServiceWorkerRegistration from './components/ServiceWorkerRegistration';
+import PWAInstall from './components/PWAInstall';
+import OfflineNotification from './components/OfflineNotification';
+
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
-  title: "Takvimi Shqip - Kohet e Namazit",
-  description: "Kohet e namazit dhe drejtimi i Kiblës për Kosovë dhe Shqipëri",
-  keywords: ["prayer times", "kohet e namazit", "takvim", "qibla", "kosove", "shqiperi", "islamic app"],
-  manifest: "/manifest.json",
+  title: 'Takvimi Shqip - Kohet e Namazit',
+  description: 'Kohet e namazit dhe drejtimi i Kiblës për Kosovë dhe Shqipëri',
+  keywords: [
+    'prayer times',
+    'kohet e namazit',
+    'takvim',
+    'qibla',
+    'kosove',
+    'shqiperi',
+    'islamic app',
+  ],
+  manifest: '/manifest.json',
   icons: {
     apple: [
       { url: '/icons/icon-192x192.png', sizes: '192x192', type: 'image/png' },
@@ -18,8 +33,8 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#000000",
-  width: "device-width",
+  themeColor: '#000000',
+  width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
@@ -31,7 +46,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="sq" className={inter.variable}>
       <head>
         <meta name="application-name" content="Takvimi Shqip" />
         <meta name="apple-mobile-web-app-capable" content="yes" />

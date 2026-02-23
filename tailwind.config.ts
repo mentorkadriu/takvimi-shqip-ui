@@ -20,4 +20,4 @@ const config: Config = {
   darkMode: 'media',
 };
 
-export default config; 
+export default config;

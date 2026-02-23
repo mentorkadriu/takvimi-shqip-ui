@@ -3,8 +3,18 @@ import { format } from 'date-fns';
 
 // English month names matching the JSON keys from drilonjaha/kohet-e-namazit-kosove-json
 const MONTH_NAMES = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December'
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
 ];
 
 // Cache for the full dataset (loaded once)
@@ -24,18 +34,14 @@ async function loadPrayerData(): Promise<NewPrayerTimesData> {
     throw new Error('Failed to load prayer times data');
   }
 
-  dataCache = await response.json() as NewPrayerTimesData;
+  dataCache = (await response.json()) as NewPrayerTimesData;
   return dataCache;
 }
 
 /**
  * Convert a day entry from the new format to the standard PrayerTimes interface
  */
-function convertDay(
-  dayData: NewPrayerDay,
-  month: number,
-  year: number
-): PrayerTimes {
+function convertDay(dayData: NewPrayerDay, month: number, year: number): PrayerTimes {
   return {
     imsak: dayData.imsak,
     fajr: dayData.fajr,
@@ -55,10 +61,7 @@ function convertDay(
 /**
  * Get prayer times for all days in a given month and year
  */
-export async function getMonthPrayerTimes(
-  year: number,
-  month: number
-): Promise<PrayerTimes[]> {
+export async function getMonthPrayerTimes(year: number, month: number): Promise<PrayerTimes[]> {
   const cacheKey = `${year}-${month}`;
   if (monthCache[cacheKey]) return monthCache[cacheKey];
 
@@ -69,9 +72,7 @@ export async function getMonthPrayerTimes(
     throw new Error(`No prayer times found for ${monthName}`);
   }
 
-  const result = data.prayer_times[monthName].map((day) =>
-    convertDay(day, month, year)
-  );
+  const result = data.prayer_times[monthName].map((day) => convertDay(day, month, year));
 
   monthCache[cacheKey] = result;
   return result;

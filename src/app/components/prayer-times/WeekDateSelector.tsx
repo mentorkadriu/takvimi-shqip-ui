@@ -1,12 +1,5 @@
 'use client';
 
-import { useRef, useEffect } from 'react';
-import { type Swiper as SwiperType } from 'swiper';
-
-// Import Swiper styles
-import 'swiper/css';
-import 'swiper/css/navigation';
-
 interface DateInfo {
   day: number;
   weekday: string;
@@ -22,67 +15,65 @@ interface WeekDateSelectorProps {
   formatDate: (date: Date) => DateInfo;
 }
 
-export default function WeekDateSelector({ 
-  onDateSelect, 
-  weekDates, 
-  formatDate 
+export default function WeekDateSelector({
+  onDateSelect,
+  weekDates,
+  formatDate,
 }: WeekDateSelectorProps) {
-  // Use selectedDate to determine the current week's range
-  const weekRange = `${formatDate(weekDates[0]).month} - ${formatDate(weekDates[weekDates.length - 1]).month}`;
-  
-  // Reference to the Swiper instance
-  const swiperRef = useRef<SwiperType | null>(null);
-  
-  // Find the index of the selected date (should be 3 - the middle)
-  const selectedIndex = weekDates.findIndex(date => 
-    formatDate(date).isSelected
-  );
-  
-  // Initialize the slider to the selected date
-  useEffect(() => {
-    if (swiperRef.current && selectedIndex !== -1) {
-      swiperRef.current.slideTo(selectedIndex, 0);
-    }
-  }, [selectedIndex]);
+  const weekRange = `${formatDate(weekDates[0]).month} – ${formatDate(weekDates[weekDates.length - 1]).month}`;
 
   return (
-    <div className="relative mb-6">
-      {/* Week range indicator */}
-      <div className="text-xs text-center text-gray-500 dark:text-gray-400 mb-2">
+    <div className="space-y-1.5">
+      {/* Month range label */}
+      <p className="text-center text-xs font-medium text-slate-400 dark:text-slate-500 tracking-wide uppercase">
         {weekRange}
-      </div>
-      
-      {/* Fixed width date selector */}
+      </p>
+
+      {/* Day pills */}
       <div className="grid grid-cols-7 gap-1">
-        {weekDates.map(date => {
-          const formattedDate = formatDate(date);
+        {weekDates.map((date) => {
+          const d = formatDate(date);
           return (
             <button
-              key={formattedDate.fullDate}
+              key={d.fullDate}
               onClick={() => onDateSelect(date)}
-              className={`flex flex-col items-center py-1 rounded-lg transition-colors ${
-                formattedDate.isSelected 
-                  ? 'bg-blue-100 dark:bg-blue-900/30' 
-                  : 'hover:bg-gray-100 dark:hover:bg-gray-700/30'
+              className={`flex flex-col items-center py-1.5 rounded-xl transition-all ${
+                d.isSelected
+                  ? 'bg-slate-800 dark:bg-slate-700 shadow-sm'
+                  : 'hover:bg-slate-100 dark:hover:bg-slate-800'
               }`}
             >
-              <span className="text-xs text-gray-500 dark:text-gray-400">{formattedDate.weekday}</span>
-              <span className={`flex items-center justify-center w-8 h-8 my-1 rounded-full ${
-                formattedDate.isToday 
-                  ? formattedDate.isSelected
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200'
-                  : formattedDate.isSelected
-                    ? 'bg-blue-500 text-white'
-                    : ''
-              }`}>
-                {formattedDate.day}
+              <span
+                className={`text-[10px] font-medium mb-0.5 ${
+                  d.isSelected ? 'text-slate-300' : 'text-slate-400 dark:text-slate-500'
+                }`}
+              >
+                {d.weekday}
               </span>
-              <span className="text-xs text-gray-500 dark:text-gray-400">{formattedDate.month}</span>
+              <span
+                className={`flex items-center justify-center w-7 h-7 rounded-full text-sm font-semibold ${
+                  d.isToday && d.isSelected
+                    ? 'bg-emerald-500 text-white'
+                    : d.isToday
+                      ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400'
+                      : d.isSelected
+                        ? 'text-white'
+                        : 'text-slate-700 dark:text-slate-300'
+                }`}
+              >
+                {d.day}
+              </span>
+              <span
+                className={`text-[9px] mt-0.5 ${
+                  d.isSelected ? 'text-slate-400' : 'text-slate-300 dark:text-slate-600'
+                }`}
+              >
+                {d.month}
+              </span>
             </button>
           );
         })}
       </div>
     </div>
   );
-} 
+}

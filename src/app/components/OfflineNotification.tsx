@@ -30,4 +30,4 @@ export default function OfflineNotification() {
       You are currently offline. Some features may be limited.
     </div>
   );
-} 
+}

@@ -2,7 +2,8 @@ const fs = require('fs');
 const path = require('path');
 const https = require('https');
 
-const REPO_URL = 'https://raw.githubusercontent.com/drilonjaha/kohet-e-namazit-kosove-json/main/kosovo-prayer-times.json';
+const REPO_URL =
+  'https://raw.githubusercontent.com/drilonjaha/kohet-e-namazit-kosove-json/main/kosovo-prayer-times.json';
 const OUTPUT_DIR = path.join(process.cwd(), 'public', 'data');
 const OUTPUT_FILE = path.join(OUTPUT_DIR, 'kosovo-prayer-times.json');
 
@@ -14,15 +15,19 @@ function ensureDirectoryExists(directory) {
 
 function downloadFile(url) {
   return new Promise((resolve, reject) => {
-    https.get(url, (response) => {
-      if (response.statusCode === 200) {
-        let data = '';
-        response.on('data', (chunk) => { data += chunk; });
-        response.on('end', () => resolve(data));
-      } else {
-        reject(new Error(`Failed to download: ${response.statusCode}`));
-      }
-    }).on('error', reject);
+    https
+      .get(url, (response) => {
+        if (response.statusCode === 200) {
+          let data = '';
+          response.on('data', (chunk) => {
+            data += chunk;
+          });
+          response.on('end', () => resolve(data));
+        } else {
+          reject(new Error(`Failed to download: ${response.statusCode}`));
+        }
+      })
+      .on('error', reject);
   });
 }
 

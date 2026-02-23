@@ -5,12 +5,14 @@ A modern, responsive web application for Muslims to check prayer times and find 
 ## Features
 
 ### Prayer Times
+
 - Real-time prayer times based on user location
 - Displays Fajr, Sunrise, Dhuhr, Asr, Maghrib, and Isha times
 - Shows next prayer time with countdown
 - Includes Hijri date information
 
 ### Qibla Direction
+
 - Interactive compass to find the direction to the Kaaba
 - Uses device orientation for real-time updates
 - Displays precise angle from North
@@ -29,6 +31,7 @@ A modern, responsive web application for Muslims to check prayer times and find 
 ## Getting Started
 
 ### Prerequisites
+
 - Node.js 18.17 or later
 - npm or yarn
 
@@ -84,6 +87,7 @@ src/
 ├── public/                   # Static assets
 └── ...
 ```
+
 ## TODO:
 
 - PrayerTimesList.tsx: improve timeline from https://codepen.io/bbera/pen/gOMKYKg and make list item as card

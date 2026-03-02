@@ -151,10 +151,9 @@ const withPWA = withPWAInit({
         if (!isSameOrigin) return false;
         return !url.pathname.startsWith('/api/');
       },
-      handler: 'NetworkFirst',
+      handler: 'StaleWhileRevalidate',
       options: {
         cacheName: 'others',
-        networkTimeoutSeconds: 10,
         expiration: {
           maxEntries: 32,
           maxAgeSeconds: 24 * 60 * 60, // 24 hours

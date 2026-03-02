@@ -1,204 +1,26 @@
-/** @type {import('next').NextConfig} */
-import withPWAInit from 'next-pwa';
-import { createRequire } from 'module';
+import { spawnSync } from 'node:child_process';
+import withSerwistInit from '@serwist/next';
 
-const require = createRequire(import.meta.url);
-const { version } = require('./package.json');
+const revision =
+  spawnSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf-8' }).stdout.trim() ||
+  crypto.randomUUID();
 
-const withPWA = withPWAInit({
-  dest: 'public',
-  register: false,
-  skipWaiting: true,
+const withSerwist = withSerwistInit({
+  swSrc: 'src/app/sw.ts',
+  swDest: 'public/sw.js',
   disable: process.env.NODE_ENV === 'development',
-  // Precache HTML pages so the app shell loads immediately offline
-  additionalManifestEntries: [
-    { url: '/', revision: version },
-    { url: '/qibla', revision: version },
-    { url: '/data/kosovo-prayer-times.json', revision: version },
+  additionalPrecacheEntries: [
+    { url: '/', revision },
+    { url: '/qibla', revision },
+    { url: '/data/kosovo-prayer-times.json', revision },
   ],
-  runtimeCaching: [
-    {
-      // Prayer times data — CacheFirst so it works fully offline after first load
-      urlPattern: /\/data\/kosovo-prayer-times\.json$/i,
-      handler: 'CacheFirst',
-      options: {
-        cacheName: 'prayer-times-data',
-        expiration: {
-          maxEntries: 1,
-          maxAgeSeconds: 365 * 24 * 60 * 60, // 1 year (data is year-agnostic)
-        },
-      },
-    },
-    {
-      urlPattern: /^https:\/\/fonts\.(?:googleapis|gstatic)\.com\/.*/i,
-      handler: 'CacheFirst',
-      options: {
-        cacheName: 'google-fonts',
-        expiration: {
-          maxEntries: 4,
-          maxAgeSeconds: 365 * 24 * 60 * 60, // 1 year
-        },
-      },
-    },
-    {
-      urlPattern: /\.(?:eot|otf|ttc|ttf|woff|woff2|font.css)$/i,
-      handler: 'StaleWhileRevalidate',
-      options: {
-        cacheName: 'static-font-assets',
-        expiration: {
-          maxEntries: 4,
-          maxAgeSeconds: 7 * 24 * 60 * 60, // 1 week
-        },
-      },
-    },
-    {
-      urlPattern: /\.(?:jpg|jpeg|gif|png|svg|ico|webp)$/i,
-      handler: 'StaleWhileRevalidate',
-      options: {
-        cacheName: 'static-image-assets',
-        expiration: {
-          maxEntries: 64,
-          maxAgeSeconds: 24 * 60 * 60, // 24 hours
-        },
-      },
-    },
-    {
-      urlPattern: /\/_next\/image\?url=.+$/i,
-      handler: 'StaleWhileRevalidate',
-      options: {
-        cacheName: 'next-image',
-        expiration: {
-          maxEntries: 64,
-          maxAgeSeconds: 24 * 60 * 60, // 24 hours
-        },
-      },
-    },
-    {
-      urlPattern: /\.(?:mp3|wav|ogg)$/i,
-      handler: 'CacheFirst',
-      options: {
-        cacheName: 'static-audio-assets',
-        expiration: {
-          maxEntries: 32,
-          maxAgeSeconds: 24 * 60 * 60, // 24 hours
-        },
-      },
-    },
-    {
-      urlPattern: /\.(?:mp4)$/i,
-      handler: 'CacheFirst',
-      options: {
-        cacheName: 'static-video-assets',
-        expiration: {
-          maxEntries: 32,
-          maxAgeSeconds: 24 * 60 * 60, // 24 hours
-        },
-      },
-    },
-    {
-      urlPattern: /\.(?:js)$/i,
-      handler: 'StaleWhileRevalidate',
-      options: {
-        cacheName: 'static-js-assets',
-        expiration: {
-          maxEntries: 32,
-          maxAgeSeconds: 24 * 60 * 60, // 24 hours
-        },
-      },
-    },
-    {
-      urlPattern: /\.(?:css|less)$/i,
-      handler: 'StaleWhileRevalidate',
-      options: {
-        cacheName: 'static-style-assets',
-        expiration: {
-          maxEntries: 32,
-          maxAgeSeconds: 24 * 60 * 60, // 24 hours
-        },
-      },
-    },
-    {
-      urlPattern: /\/_next\/data\/.+\/.+\.json$/i,
-      handler: 'StaleWhileRevalidate',
-      options: {
-        cacheName: 'next-data',
-        expiration: {
-          maxEntries: 32,
-          maxAgeSeconds: 24 * 60 * 60, // 24 hours
-        },
-      },
-    },
-    {
-      urlPattern: /\.(?:json|xml|csv)$/i,
-      handler: 'NetworkFirst',
-      options: {
-        cacheName: 'static-data-assets',
-        expiration: {
-          maxEntries: 32,
-          maxAgeSeconds: 24 * 60 * 60, // 24 hours
-        },
-      },
-    },
-    {
-      urlPattern: ({ url }) => {
-        const isSameOrigin = self.origin === url.origin;
-        if (!isSameOrigin) return false;
-        return url.pathname.startsWith('/api/') && !url.pathname.startsWith('/api/auth/');
-      },
-      handler: 'NetworkFirst',
-      options: {
-        cacheName: 'apis',
-        networkTimeoutSeconds: 10,
-        expiration: {
-          maxEntries: 16,
-          maxAgeSeconds: 24 * 60 * 60, // 24 hours
-        },
-      },
-    },
-    {
-      urlPattern: ({ url }) => {
-        const isSameOrigin = self.origin === url.origin;
-        if (!isSameOrigin) return false;
-        return !url.pathname.startsWith('/api/');
-      },
-      handler: 'StaleWhileRevalidate',
-      options: {
-        cacheName: 'others',
-        expiration: {
-          maxEntries: 32,
-          maxAgeSeconds: 24 * 60 * 60, // 24 hours
-        },
-      },
-    },
-    {
-      urlPattern: ({ url }) => !(self.origin === url.origin),
-      handler: 'NetworkFirst',
-      options: {
-        cacheName: 'cross-origin',
-        networkTimeoutSeconds: 10,
-        expiration: {
-          maxEntries: 32,
-          maxAgeSeconds: 60 * 60, // 1 hour
-        },
-      },
-    },
-  ],
-  buildExcludes: [/app-build-manifest.json$/],
-  fallbacks: {
-    document: '/~offline',
-    image: '/static/images/fallback.png',
-    font: '/static/fonts/fallback.woff2',
-    audio: false,
-    video: false,
-    fetch: false,
-  },
 });
 
+/** @type {import('next').NextConfig} */
 const nextConfig = {
-  /* config options here */
   typescript: {
     ignoreBuildErrors: true,
   },
 };
 
-export default withPWA(nextConfig);
+export default withSerwist(nextConfig);

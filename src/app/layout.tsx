@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
-import ServiceWorkerRegistration from './components/ServiceWorkerRegistration';
 import OfflineNotification from './components/OfflineNotification';
 
 const inter = Inter({
@@ -56,7 +55,6 @@ export default function RootLayout({
         <link rel="shortcut icon" href="/icons/icon-192x192.png" />
       </head>
       <body>
-        <ServiceWorkerRegistration />
         <OfflineNotification />
         {children}
       </body>

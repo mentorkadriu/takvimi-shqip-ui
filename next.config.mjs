@@ -1,11 +1,20 @@
 /** @type {import('next').NextConfig} */
 import withPWAInit from 'next-pwa';
+import { createRequire } from 'module';
+
+const require = createRequire(import.meta.url);
+const { version } = require('./package.json');
 
 const withPWA = withPWAInit({
   dest: 'public',
   register: true,
   skipWaiting: true,
   disable: process.env.NODE_ENV === 'development',
+  // Precache HTML pages so the app shell loads immediately offline
+  additionalManifestEntries: [
+    { url: '/', revision: version },
+    { url: '/qibla', revision: version },
+  ],
   runtimeCaching: [
     {
       // Prayer times data — CacheFirst so it works fully offline after first load

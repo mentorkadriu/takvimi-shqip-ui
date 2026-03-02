@@ -1,9 +1,8 @@
 import Link from 'next/link';
 import { Suspense } from 'react';
 import { CompassIcon } from './components/icons';
-
-// Create a client component wrapper for the PrayerTimes component
 import ClientPrayerTimesWrapper from '@/app/components/ClientPrayerTimesWrapper';
+import PWAInstall from '@/app/components/PWAInstall';
 
 export default function Home() {
   return (
@@ -14,13 +13,16 @@ export default function Home() {
           <span className="font-bold text-base text-slate-800 dark:text-slate-100 tracking-tight">
             ☪ Takvimi Shqip
           </span>
-          <Link
-            href="/qibla"
-            className="flex items-center gap-1.5 text-sm font-medium text-emerald-600 dark:text-emerald-400 hover:text-emerald-700"
-          >
-            <CompassIcon className="w-4 h-4" />
-            Kibla
-          </Link>
+          <div className="flex items-center gap-4">
+            <PWAInstall />
+            <Link
+              href="/qibla"
+              className="flex items-center gap-1.5 text-sm font-medium text-emerald-600 dark:text-emerald-400 hover:text-emerald-700"
+            >
+              <CompassIcon className="w-4 h-4" />
+              Kibla
+            </Link>
+          </div>
         </div>
       </header>
 

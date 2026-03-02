@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import ServiceWorkerRegistration from './components/ServiceWorkerRegistration';
-import PWAInstall from './components/PWAInstall';
 import OfflineNotification from './components/OfflineNotification';
 
 const inter = Inter({
@@ -60,7 +59,6 @@ export default function RootLayout({
         <ServiceWorkerRegistration />
         <OfflineNotification />
         {children}
-        <PWAInstall />
       </body>
     </html>
   );

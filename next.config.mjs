@@ -7,13 +7,14 @@ const { version } = require('./package.json');
 
 const withPWA = withPWAInit({
   dest: 'public',
-  register: true,
+  register: false,
   skipWaiting: true,
   disable: process.env.NODE_ENV === 'development',
   // Precache HTML pages so the app shell loads immediately offline
   additionalManifestEntries: [
     { url: '/', revision: version },
     { url: '/qibla', revision: version },
+    { url: '/data/kosovo-prayer-times.json', revision: version },
   ],
   runtimeCaching: [
     {

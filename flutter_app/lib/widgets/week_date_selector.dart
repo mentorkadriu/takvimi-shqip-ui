@@ -12,31 +12,33 @@ class WeekDateSelector extends StatefulWidget {
 }
 
 class _WeekDateSelectorState extends State<WeekDateSelector> {
-  late ScrollController _scrollController;
+  late ScrollController _sc;
 
   @override
   void initState() {
     super.initState();
-    _scrollController = ScrollController();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToToday());
+    _sc = ScrollController();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToSelected());
   }
 
-  void _scrollToToday() {
-    final today = DateTime.now();
-    final start = today.subtract(const Duration(days: 3));
-    final diff = today.difference(start).inDays;
-    _scrollController.animateTo(
-      diff * 62.0,
-      duration: const Duration(milliseconds: 300),
+  void _scrollToSelected() {
+    const itemW = 62.0;
+    const startOffset = 3;
+    _sc.animateTo(
+      startOffset * itemW,
+      duration: const Duration(milliseconds: 350),
       curve: Curves.easeOut,
     );
   }
 
   @override
   void dispose() {
-    _scrollController.dispose();
+    _sc.dispose();
     super.dispose();
   }
+
+  bool _same(DateTime a, DateTime b) =>
+      a.year == b.year && a.month == b.month && a.day == b.day;
 
   @override
   Widget build(BuildContext context) {
@@ -46,17 +48,17 @@ class _WeekDateSelectorState extends State<WeekDateSelector> {
     final days = List.generate(14, (i) => start.add(Duration(days: i)));
 
     return SizedBox(
-      height: 76,
+      height: 82,
       child: ListView.builder(
-        controller: _scrollController,
+        controller: _sc,
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 20),
         itemCount: days.length,
-        itemBuilder: (context, index) {
-          final day = days[index];
-          final isSelected = isSameDay(day, provider.selectedDate);
-          final isToday = isSameDay(day, today);
-          return _DayChip(
+        itemBuilder: (context, i) {
+          final day = days[i];
+          final isSelected = _same(day, provider.selectedDate);
+          final isToday = _same(day, today);
+          return _DayPill(
             day: day,
             isSelected: isSelected,
             isToday: isToday,
@@ -66,18 +68,15 @@ class _WeekDateSelectorState extends State<WeekDateSelector> {
       ),
     );
   }
-
-  bool isSameDay(DateTime a, DateTime b) =>
-      a.year == b.year && a.month == b.month && a.day == b.day;
 }
 
-class _DayChip extends StatelessWidget {
+class _DayPill extends StatelessWidget {
   final DateTime day;
   final bool isSelected;
   final bool isToday;
   final VoidCallback onTap;
 
-  const _DayChip({
+  const _DayPill({
     required this.day,
     required this.isSelected,
     required this.isToday,
@@ -86,22 +85,41 @@ class _DayChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dayLetter = DateFormat('E').format(day).substring(0, 1).toUpperCase();
+    final dayLetter = DateFormat('E').format(day).substring(0, 2).toUpperCase();
+
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeInOut,
         width: 52,
-        margin: const EdgeInsets.only(right: 8, top: 4, bottom: 4),
+        margin: const EdgeInsets.only(right: 10, top: 4, bottom: 4),
         decoration: BoxDecoration(
-          color: isSelected
-              ? AppColors.emerald600
-              : isToday
-                  ? AppColors.emerald600.withOpacity(0.15)
-                  : Colors.white.withOpacity(0.12),
-          borderRadius: BorderRadius.circular(14),
-          border: isToday && !isSelected
-              ? Border.all(color: AppColors.emerald400, width: 1.5)
+          borderRadius: BorderRadius.circular(16),
+          gradient: isSelected
+              ? const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [AppColors.emerald400, AppColors.emerald600],
+                )
+              : null,
+          color: isSelected ? null : Colors.white.withValues(alpha: 0.06),
+          border: Border.all(
+            color: isSelected
+                ? AppColors.emerald300.withValues(alpha: 0.5)
+                : isToday
+                    ? AppColors.emerald400.withValues(alpha: 0.5)
+                    : Colors.white.withValues(alpha: 0.08),
+            width: 1.5,
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: AppColors.emerald500.withValues(alpha: 0.35),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
               : null,
         ),
         child: Column(
@@ -110,23 +128,33 @@ class _DayChip extends StatelessWidget {
             Text(
               dayLetter,
               style: TextStyle(
-                fontSize: 11,
+                fontSize: 10,
                 fontWeight: FontWeight.w600,
                 color: isSelected
-                    ? Colors.white
-                    : Colors.white.withOpacity(0.7),
+                    ? Colors.black.withValues(alpha: 0.7)
+                    : Colors.white.withValues(alpha: 0.5),
                 letterSpacing: 0.5,
               ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 5),
             Text(
               '${day.day}',
               style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: isSelected ? Colors.white : Colors.white,
+                fontSize: 19,
+                fontWeight: FontWeight.w700,
+                color: isSelected ? Colors.black : Colors.white,
               ),
             ),
+            if (isToday && !isSelected)
+              Container(
+                width: 4,
+                height: 4,
+                margin: const EdgeInsets.only(top: 3),
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.emerald400,
+                ),
+              ),
           ],
         ),
       ),

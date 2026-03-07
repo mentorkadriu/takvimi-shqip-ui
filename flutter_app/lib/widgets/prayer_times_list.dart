@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
@@ -11,177 +12,252 @@ class PrayerTimesList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<PrayerProvider>();
-    final entries = provider.entries;
-
+    final entries = context.watch<PrayerProvider>().entries;
     if (entries.isEmpty) return const SizedBox.shrink();
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
         children: entries.asMap().entries.map((e) {
-          return _PrayerItem(entry: e.value, index: e.key);
+          return _PrayerCard(entry: e.value, index: e.key);
         }).toList(),
       ),
     );
   }
 }
 
-class _PrayerItem extends StatelessWidget {
+class _PrayerCard extends StatelessWidget {
   final PrayerEntry entry;
   final int index;
-
-  const _PrayerItem({required this.entry, required this.index});
+  const _PrayerCard({required this.entry, required this.index});
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final meta = prayerMeta[entry.key] ?? prayerMeta['dhuhr']!;
 
-    Color cardColor;
-    Color textColor;
-    Color subColor;
-    Widget? statusBadge;
-    bool isHighlighted = false;
-
-    switch (entry.status) {
-      case PrayerStatus.current:
-        cardColor = AppColors.emerald600;
-        textColor = Colors.white;
-        subColor = AppColors.emerald100;
-        isHighlighted = true;
-        statusBadge = _StatusBadge(label: 'Aktual', color: Colors.white.withOpacity(0.25));
-      case PrayerStatus.next:
-        cardColor = AppColors.blue500;
-        textColor = Colors.white;
-        subColor = const Color(0xFFBFDBFE);
-        isHighlighted = true;
-        statusBadge = _StatusBadge(label: 'Tjetri', color: Colors.white.withOpacity(0.25));
-      case PrayerStatus.past:
-        cardColor = isDark ? AppColors.slate700 : AppColors.slate200;
-        textColor = isDark ? AppColors.slate400 : AppColors.slate400;
-        subColor = isDark ? AppColors.slate500 : AppColors.slate400;
-      case PrayerStatus.upcoming:
-        cardColor = isDark ? AppColors.slate800 : Colors.white;
-        textColor = isDark ? Colors.white : AppColors.slate800;
-        subColor = isDark ? AppColors.slate400 : AppColors.slate500;
-    }
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      decoration: BoxDecoration(
-        color: cardColor,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: isHighlighted
-            ? [
-                BoxShadow(
-                  color: cardColor.withOpacity(0.35),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ]
-            : [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        child: Row(
-          children: [
-            // Icon bubble
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                gradient: isHighlighted
-                    ? LinearGradient(
-                        colors: [
-                          Colors.white.withOpacity(0.2),
-                          Colors.white.withOpacity(0.1),
-                        ],
-                      )
-                    : LinearGradient(colors: meta.gradient),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Center(
-                child: Text(
-                  meta.emoji,
-                  style: const TextStyle(fontSize: 22),
-                ),
-              ),
-            ),
-            const SizedBox(width: 14),
-            // Prayer name
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    entry.albanianName,
-                    style: TextStyle(
-                      color: textColor,
-                      fontSize: entry.isSecondary ? 14 : 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  Text(
-                    entry.name,
-                    style: TextStyle(
-                      color: subColor,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            // Status badge
-            if (statusBadge != null) ...[statusBadge, const SizedBox(width: 10)],
-            // Time
-            Text(
-              entry.time,
-              style: TextStyle(
-                color: entry.status == PrayerStatus.past ? subColor : textColor,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                fontFeatures: const [FontFeature.tabularFigures()],
-              ),
-            ),
-          ],
-        ),
-      ),
-    )
-        .animate(delay: Duration(milliseconds: 60 * index))
-        .fadeIn(duration: 300.ms)
-        .slideX(begin: 0.05, end: 0, duration: 300.ms, curve: Curves.easeOut);
+    return _CardShell(
+      entry: entry,
+      meta: meta,
+      index: index,
+    );
   }
 }
 
-class _StatusBadge extends StatelessWidget {
+class _CardShell extends StatelessWidget {
+  final PrayerEntry entry;
+  final PrayerMeta meta;
+  final int index;
+
+  const _CardShell({
+    required this.entry,
+    required this.meta,
+    required this.index,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isCurrent  = entry.status == PrayerStatus.current;
+    final isNext     = entry.status == PrayerStatus.next;
+    final isPast     = entry.status == PrayerStatus.past;
+    final isSecondary = entry.isSecondary;
+
+    // ── Dynamic styling per state ──────────────────────────────────────────
+    final Color borderColor;
+    final List<Color> bgGradient;
+    final double cardOpacity;
+
+    if (isCurrent) {
+      borderColor = AppColors.emerald400.withValues(alpha: 0.6);
+      bgGradient  = [
+        AppColors.emerald500.withValues(alpha: 0.22),
+        AppColors.emerald800.withValues(alpha: 0.12),
+      ];
+      cardOpacity = 1.0;
+    } else if (isNext) {
+      borderColor = AppColors.blue400.withValues(alpha: 0.4);
+      bgGradient  = [
+        AppColors.blue400.withValues(alpha: 0.12),
+        AppColors.blue400.withValues(alpha: 0.06),
+      ];
+      cardOpacity = 1.0;
+    } else if (isPast) {
+      borderColor = Colors.white.withValues(alpha: 0.05);
+      bgGradient  = [
+        Colors.white.withValues(alpha: 0.03),
+        Colors.white.withValues(alpha: 0.02),
+      ];
+      cardOpacity = 0.55;
+    } else {
+      borderColor = Colors.white.withValues(alpha: 0.08);
+      bgGradient  = [
+        Colors.white.withValues(alpha: 0.06),
+        Colors.white.withValues(alpha: 0.03),
+      ];
+      cardOpacity = 1.0;
+    }
+
+    return Opacity(
+      opacity: cardOpacity,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 10),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(18),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 400),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(18),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: bgGradient,
+                ),
+                border: Border.all(color: borderColor, width: 1.0),
+                boxShadow: isCurrent
+                    ? [
+                        BoxShadow(
+                          color: AppColors.emerald500.withValues(alpha: 0.18),
+                          blurRadius: 20,
+                          offset: const Offset(0, 6),
+                        ),
+                      ]
+                    : null,
+              ),
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: isSecondary ? 11 : 14,
+                ),
+                child: Row(
+                  children: [
+                    // ── Icon bubble ──────────────────────────────────────
+                    _IconBubble(meta: meta, isCurrent: isCurrent, isSecondary: isSecondary),
+                    const SizedBox(width: 14),
+                    // ── Name ─────────────────────────────────────────────
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            entry.albanianName,
+                            style: TextStyle(
+                              color: isPast
+                                  ? Colors.white.withValues(alpha: 0.45)
+                                  : Colors.white,
+                              fontSize: isSecondary ? 14 : 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          Text(
+                            entry.name,
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.35),
+                              fontSize: 11,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // ── Status badge ──────────────────────────────────────
+                    if (isCurrent) _Badge(label: 'AKTUAL', color: AppColors.emerald400),
+                    if (isNext)    _Badge(label: 'TJETRI', color: AppColors.blue400),
+                    const SizedBox(width: 8),
+                    // ── Time ─────────────────────────────────────────────
+                    Text(
+                      entry.time,
+                      style: TextStyle(
+                        color: isPast
+                            ? Colors.white.withValues(alpha: 0.35)
+                            : isCurrent
+                                ? AppColors.emerald300
+                                : Colors.white,
+                        fontSize: isSecondary ? 17 : 20,
+                        fontWeight: FontWeight.w700,
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    )
+        .animate(delay: Duration(milliseconds: 50 * index))
+        .fadeIn(duration: 350.ms)
+        .slideX(begin: 0.04, end: 0, duration: 350.ms, curve: Curves.easeOut);
+  }
+}
+
+class _IconBubble extends StatelessWidget {
+  final PrayerMeta meta;
+  final bool isCurrent;
+  final bool isSecondary;
+
+  const _IconBubble({
+    required this.meta,
+    required this.isCurrent,
+    required this.isSecondary,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final size = isSecondary ? 38.0 : 44.0;
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: isCurrent
+              ? [
+                  AppColors.emerald400.withValues(alpha: 0.3),
+                  AppColors.emerald600.withValues(alpha: 0.15),
+                ]
+              : meta.gradient.map((c) => c.withValues(alpha: 0.8)).toList(),
+        ),
+        border: Border.all(
+          color: isCurrent
+              ? AppColors.emerald400.withValues(alpha: 0.4)
+              : Colors.white.withValues(alpha: 0.08),
+        ),
+      ),
+      child: Center(
+        child: Text(
+          meta.emoji,
+          style: TextStyle(fontSize: isSecondary ? 18 : 22),
+        ),
+      ),
+    );
+  }
+}
+
+class _Badge extends StatelessWidget {
   final String label;
   final Color color;
-
-  const _StatusBadge({required this.label, required this.color});
+  const _Badge({required this.label, required this.color});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      margin: const EdgeInsets.only(right: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
       decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(8),
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: color.withValues(alpha: 0.35)),
       ),
       child: Text(
         label,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 10,
-          fontWeight: FontWeight.w600,
-          letterSpacing: 0.5,
+        style: TextStyle(
+          color: color,
+          fontSize: 9,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.8,
         ),
       ),
     );

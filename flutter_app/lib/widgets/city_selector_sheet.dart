@@ -21,50 +21,55 @@ class CitySelectorSheet extends StatelessWidget {
     final provider = context.watch<PrayerProvider>();
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.slate800 : Colors.white,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Handle
-          Container(
-            margin: const EdgeInsets.only(top: 12),
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: AppColors.slate300,
-              borderRadius: BorderRadius.circular(2),
+    final screenH = MediaQuery.of(context).size.height;
+
+    return ConstrainedBox(
+      constraints: BoxConstraints(maxHeight: screenH * 0.75),
+      child: Container(
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.slate800 : Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Handle
+            Container(
+              margin: const EdgeInsets.only(top: 12),
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppColors.slate300,
+                borderRadius: BorderRadius.circular(2),
+              ),
             ),
-          ),
-          // Title
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
-            child: Row(
-              children: [
-                const Icon(Icons.location_city_rounded, color: AppColors.emerald600),
-                const SizedBox(width: 10),
-                Text(
-                  'Zgjedh Qytetin',
-                  style: Theme.of(context).textTheme.headlineMedium,
-                ),
-              ],
+            // Title
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+              child: Row(
+                children: [
+                  const Icon(Icons.location_city_rounded, color: AppColors.emerald600),
+                  const SizedBox(width: 10),
+                  Text(
+                    'Zgjedh Qytetin',
+                    style: Theme.of(context).textTheme.headlineMedium,
+                  ),
+                ],
+              ),
             ),
-          ),
-          const Divider(),
-          // City grid
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-            child: GridView.count(
-              crossAxisCount: 2,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisSpacing: 10,
-              mainAxisSpacing: 10,
-              childAspectRatio: 2.8,
-              children: kosovarCities.map((city) {
+            const Divider(),
+            // City grid — scrollable so it never overflows
+            Flexible(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+                child: GridView.count(
+                  crossAxisCount: 2,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  crossAxisSpacing: 10,
+                  mainAxisSpacing: 10,
+                  childAspectRatio: 2.8,
+                  children: kosovarCities.map((city) {
                 final isSelected = city.name == provider.selectedCity;
                 return InkWell(
                   onTap: () {
@@ -117,9 +122,11 @@ class CitySelectorSheet extends StatelessWidget {
                   ),
                 );
               }).toList(),
+                ),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

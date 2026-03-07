@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import 'home_screen.dart';
@@ -11,7 +12,7 @@ class MainShell extends StatefulWidget {
 }
 
 class _MainShellState extends State<MainShell> {
-  int _currentIndex = 0;
+  int _idx = 0;
 
   final _screens = const [
     HomeScreen(),
@@ -20,90 +21,57 @@ class _MainShellState extends State<MainShell> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Scaffold(
-      backgroundColor: isDark ? AppColors.slate900 : AppColors.slate100,
-      // We use a custom DecoratedBox as the global background
-      body: Stack(
-        children: [
-          // Global gradient background behind home screen
-          if (_currentIndex == 0)
-            Container(
-              height: MediaQuery.of(context).size.height * 0.45,
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Color(0xFF064E3B),
-                    Color(0xFF065F46),
-                    Color(0xFF047857),
-                  ],
-                ),
-              ),
-            ),
-          // Current screen
-          IndexedStack(
-            index: _currentIndex,
-            children: _screens,
-          ),
-        ],
-      ),
-      bottomNavigationBar: _BottomNav(
-        currentIndex: _currentIndex,
-        onTap: (i) => setState(() => _currentIndex = i),
-        isDark: isDark,
+      backgroundColor: AppColors.darkBg,
+      extendBody: true,
+      body: IndexedStack(index: _idx, children: _screens),
+      bottomNavigationBar: _FloatingNav(
+        currentIndex: _idx,
+        onTap: (i) => setState(() => _idx = i),
       ),
     );
   }
 }
 
-class _BottomNav extends StatelessWidget {
+class _FloatingNav extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
-  final bool isDark;
 
-  const _BottomNav({
-    required this.currentIndex,
-    required this.onTap,
-    required this.isDark,
-  });
+  const _FloatingNav({required this.currentIndex, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.slate800 : Colors.white,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 20,
-            offset: const Offset(0, -4),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        child: SizedBox(
-          height: 64,
-          child: Row(
-            children: [
-              _NavItem(
-                icon: Icons.access_time_rounded,
-                label: 'Vaktet',
-                isSelected: currentIndex == 0,
-                onTap: () => onTap(0),
-                isDark: isDark,
-              ),
-              _NavItem(
-                icon: Icons.explore_rounded,
-                label: 'Kibla',
-                isSelected: currentIndex == 1,
-                onTap: () => onTap(1),
-                isDark: isDark,
-              ),
-            ],
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(28),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+          child: Container(
+            height: 64,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.07),
+              borderRadius: BorderRadius.circular(28),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+            ),
+            child: Row(
+              children: [
+                _NavItem(
+                  icon: Icons.access_time_rounded,
+                  activeIcon: Icons.access_time_filled_rounded,
+                  label: 'Vaktet',
+                  isSelected: currentIndex == 0,
+                  onTap: () => onTap(0),
+                ),
+                _NavItem(
+                  icon: Icons.explore_outlined,
+                  activeIcon: Icons.explore_rounded,
+                  label: 'Kibla',
+                  isSelected: currentIndex == 1,
+                  onTap: () => onTap(1),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -113,17 +81,17 @@ class _BottomNav extends StatelessWidget {
 
 class _NavItem extends StatelessWidget {
   final IconData icon;
+  final IconData activeIcon;
   final String label;
   final bool isSelected;
   final VoidCallback onTap;
-  final bool isDark;
 
   const _NavItem({
     required this.icon,
+    required this.activeIcon,
     required this.label,
     required this.isSelected,
     required this.onTap,
-    required this.isDark,
   });
 
   @override
@@ -133,41 +101,35 @@ class _NavItem extends StatelessWidget {
         onTap: onTap,
         behavior: HitTestBehavior.opaque,
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
+          duration: const Duration(milliseconds: 250),
+          margin: const EdgeInsets.all(6),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? AppColors.emerald500.withValues(alpha: 0.18)
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(22),
+            border: isSelected
+                ? Border.all(color: AppColors.emerald400.withValues(alpha: 0.3))
+                : null,
+          ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? AppColors.emerald600.withOpacity(0.12)
-                      : Colors.transparent,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  icon,
-                  size: 24,
-                  color: isSelected
-                      ? AppColors.emerald600
-                      : isDark
-                          ? AppColors.slate400
-                          : AppColors.slate400,
-                ),
+              Icon(
+                isSelected ? activeIcon : icon,
+                size: 22,
+                color: isSelected ? AppColors.emerald400 : Colors.white.withValues(alpha: 0.4),
               ),
               const SizedBox(height: 2),
               AnimatedDefaultTextStyle(
                 duration: const Duration(milliseconds: 200),
                 style: TextStyle(
-                  fontSize: 11,
-                  fontWeight:
-                      isSelected ? FontWeight.w600 : FontWeight.w400,
+                  fontSize: 10,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
                   color: isSelected
-                      ? AppColors.emerald600
-                      : isDark
-                          ? AppColors.slate400
-                          : AppColors.slate400,
+                      ? AppColors.emerald400
+                      : Colors.white.withValues(alpha: 0.4),
+                  letterSpacing: 0.3,
                 ),
                 child: Text(label),
               ),

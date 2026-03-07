@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math' as math;
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:sensors_plus/sensors_plus.dart';
@@ -16,11 +17,11 @@ class QiblaCompass extends StatefulWidget {
 class _QiblaCompassState extends State<QiblaCompass>
     with SingleTickerProviderStateMixin {
   double? _qiblaAngle;
-  double _compassHeading = 0;
+  double  _compassHeading = 0;
   StreamSubscription<MagnetometerEvent>? _magnetometerSub;
   late AnimationController _animController;
-  late Animation<double> _rotationAnim;
-  bool _isLoading = true;
+  late Animation<double>   _rotationAnim;
+  bool   _isLoading = true;
   String? _error;
   double? _userLat;
   double? _userLon;
@@ -30,11 +31,9 @@ class _QiblaCompassState extends State<QiblaCompass>
     super.initState();
     _animController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 400),
+      duration: const Duration(milliseconds: 450),
     );
-    _rotationAnim = Tween<double>(begin: 0, end: 0).animate(
-      CurvedAnimation(parent: _animController, curve: Curves.easeOut),
-    );
+    _rotationAnim = const AlwaysStoppedAnimation(0);
     _init();
   }
 
@@ -50,34 +49,31 @@ class _QiblaCompassState extends State<QiblaCompass>
         setState(() => _error = 'Shërbimi i lokacionit është i çaktivizuar.');
         return;
       }
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) {
+      LocationPermission perm = await Geolocator.checkPermission();
+      if (perm == LocationPermission.denied) {
+        perm = await Geolocator.requestPermission();
+        if (perm == LocationPermission.denied) {
           setState(() => _error = 'Leja e lokacionit u refuzua.');
           return;
         }
       }
-      if (permission == LocationPermission.deniedForever) {
+      if (perm == LocationPermission.deniedForever) {
         setState(() => _error = 'Leja e lokacionit është refuzuar përgjithmonë.');
         return;
       }
-
       final pos = await Geolocator.getCurrentPosition(
         locationSettings: const LocationSettings(accuracy: LocationAccuracy.medium),
       );
-
       setState(() {
-        _userLat = pos.latitude;
-        _userLon = pos.longitude;
+        _userLat   = pos.latitude;
+        _userLon   = pos.longitude;
         _qiblaAngle = QiblaService.calculateQibla(pos.latitude, pos.longitude);
         _isLoading = false;
       });
-    } catch (e) {
-      // Default to Kosovo coordinates
+    } catch (_) {
       setState(() {
-        _userLat = 42.5;
-        _userLon = 21.0;
+        _userLat   = 42.5;
+        _userLon   = 21.0;
         _qiblaAngle = QiblaService.calculateQibla(42.5, 21.0);
         _isLoading = false;
       });
@@ -85,24 +81,20 @@ class _QiblaCompassState extends State<QiblaCompass>
   }
 
   void _startCompass() {
-    _magnetometerSub = magnetometerEventStream().listen((event) {
-      // Convert magnetometer to heading (simplified)
-      final heading = math.atan2(event.y, event.x) * 180 / math.pi;
-      final normalizedHeading = (heading + 360) % 360;
-
-      if (mounted) {
-        setState(() => _compassHeading = normalizedHeading);
-        _animateToTarget();
-      }
+    _magnetometerSub = magnetometerEventStream().listen((e) {
+      final heading = (math.atan2(e.y, e.x) * 180 / math.pi + 360) % 360;
+      if (!mounted) return;
+      setState(() => _compassHeading = heading);
+      _animate();
     });
   }
 
-  void _animateToTarget() {
+  void _animate() {
     if (_qiblaAngle == null) return;
-    final target = _qiblaAngle! - _compassHeading;
+    final target = (_qiblaAngle! - _compassHeading) * math.pi / 180;
     _rotationAnim = Tween<double>(
       begin: _rotationAnim.value,
-      end: target * math.pi / 180,
+      end: target,
     ).animate(CurvedAnimation(parent: _animController, curve: Curves.easeOut));
     _animController.forward(from: 0);
   }
@@ -116,182 +108,154 @@ class _QiblaCompassState extends State<QiblaCompass>
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(color: AppColors.emerald500),
-            SizedBox(height: 16),
-            Text('Duke gjetur lokacionin...', style: TextStyle(color: Colors.white70)),
-          ],
-        ),
-      );
-    }
+    if (_isLoading) return const _CompassLoading();
+    if (_error != null) return _CompassError(error: _error!, onRetry: () {
+      setState(() { _error = null; _isLoading = true; });
+      _init();
+    });
 
-    if (_error != null) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.location_off, color: AppColors.amber500, size: 48),
-              const SizedBox(height: 16),
-              Text(
-                _error!,
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.white70),
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton.icon(
-                onPressed: () => setState(() {
-                  _error = null;
-                  _isLoading = true;
-                  _init();
-                }),
-                icon: const Icon(Icons.refresh),
-                label: const Text('Provo Sërish'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.emerald600,
-                  foregroundColor: Colors.white,
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    final qibla = _qiblaAngle ?? 0;
+    final qibla = _qiblaAngle ?? 0.0;
 
     return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        // Coordinates
+        // ── Coordinates pill ────────────────────────────────────────────
         if (_userLat != null)
-          Text(
-            '${_userLat!.toStringAsFixed(4)}°N, ${_userLon!.toStringAsFixed(4)}°E',
-            style: const TextStyle(color: Colors.white54, fontSize: 12),
+          _GlassPill(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.my_location, color: AppColors.emerald400, size: 13),
+                const SizedBox(width: 6),
+                Text(
+                  '${_userLat!.toStringAsFixed(4)}°N   ${_userLon!.toStringAsFixed(4)}°E',
+                  style: const TextStyle(color: Colors.white70, fontSize: 12),
+                ),
+              ],
+            ),
           ),
-        const SizedBox(height: 32),
 
-        // Compass
+        const SizedBox(height: 36),
+
+        // ── Compass dial ─────────────────────────────────────────────────
         SizedBox(
-          width: 280,
-          height: 280,
+          width: 300,
+          height: 300,
           child: Stack(
             alignment: Alignment.center,
             children: [
-              // Outer ring
+              // Outer glow ring
               Container(
-                width: 280,
-                height: 280,
+                width: 300,
+                height: 300,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(
-                    color: AppColors.emerald700,
-                    width: 2,
-                  ),
-                  gradient: RadialGradient(
-                    colors: [
-                      AppColors.slate800,
-                      AppColors.slate900,
-                    ],
-                  ),
-                ),
-              ),
-              // Tick marks & cardinal directions
-              ..._buildCardinalLabels(),
-              // Qibla needle
-              AnimatedBuilder(
-                animation: _animController,
-                builder: (_, __) {
-                  return Transform.rotate(
-                    angle: _rotationAnim.value,
-                    child: _QiblaNeedle(),
-                  );
-                },
-              ),
-              // Center dot
-              Container(
-                width: 16,
-                height: 16,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppColors.emerald500,
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.emerald500.withOpacity(0.6),
-                      blurRadius: 8,
-                      spreadRadius: 2,
+                      color: AppColors.emerald600.withValues(alpha: 0.15),
+                      blurRadius: 40,
+                      spreadRadius: 10,
                     ),
                   ],
                 ),
               ),
+              // Dial background
+              ClipOval(
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                  child: Container(
+                    width: 300,
+                    height: 300,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: RadialGradient(
+                        colors: [
+                          AppColors.darkLayer.withValues(alpha: 0.85),
+                          AppColors.darkBg.withValues(alpha: 0.95),
+                        ],
+                      ),
+                      border: Border.all(
+                        color: AppColors.emerald700.withValues(alpha: 0.5),
+                        width: 1.5,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              // Tick ring
+              CustomPaint(
+                size: const Size(270, 270),
+                painter: _TickPainter(),
+              ),
+              // Cardinal labels
+              ..._cardinalLabels(),
+              // Animated needle
+              AnimatedBuilder(
+                animation: _animController,
+                builder: (_, __) => Transform.rotate(
+                  angle: _rotationAnim.value,
+                  child: const _Needle(),
+                ),
+              ),
+              // Center jewel
+              _CenterJewel(),
             ],
           ),
         ),
 
-        const SizedBox(height: 32),
+        const SizedBox(height: 36),
 
-        // Bearing display
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          decoration: BoxDecoration(
-            color: AppColors.emerald800,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.emerald700),
-          ),
+        // ── Bearing info ─────────────────────────────────────────────────
+        _GlassPill(
           child: Column(
             children: [
               const Text(
-                '🕋  Drejtimi i Kibles',
+                '🕋  DREJTIMI I KIBLES',
                 style: TextStyle(
-                  color: AppColors.emerald100,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
+                  color: AppColors.emerald300,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 2,
                 ),
               ),
               const SizedBox(height: 6),
               Text(
-                '${qibla.toStringAsFixed(1)}° nga Veriu',
+                '${qibla.toStringAsFixed(1)}°',
                 style: const TextStyle(
                   color: Colors.white,
-                  fontSize: 26,
-                  fontWeight: FontWeight.bold,
+                  fontSize: 36,
+                  fontWeight: FontWeight.w800,
                 ),
+              ),
+              Text(
+                'nga Veriu (orë)',
+                style: TextStyle(color: Colors.white.withValues(alpha: 0.45), fontSize: 12),
               ),
             ],
           ),
+          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
         ),
       ],
     );
   }
 
-  List<Widget> _buildCardinalLabels() {
-    const labels = [
-      ('V', 0.0),  // North
-      ('L', 90.0), // East
-      ('J', 180.0), // South
-      ('P', 270.0), // West
+  List<Widget> _cardinalLabels() {
+    const dirs = [
+      ('V', 0.0, true),
+      ('L', 90.0, false),
+      ('J', 180.0, false),
+      ('P', 270.0, false),
     ];
-
-    return labels.map((label) {
-      final angle = label.$2 * math.pi / 180;
-      const r = 115.0;
-      final x = r * math.sin(angle);
-      final y = -r * math.cos(angle);
+    const r = 118.0;
+    return dirs.map((d) {
+      final angle = d.$2 * math.pi / 180;
       return Transform.translate(
-        offset: Offset(x, y),
+        offset: Offset(r * math.sin(angle), -r * math.cos(angle)),
         child: Text(
-          label.$1,
+          d.$1,
           style: TextStyle(
-            color: label.$1 == 'V'
-                ? AppColors.emerald400
-                : Colors.white.withOpacity(0.6),
-            fontSize: label.$1 == 'V' ? 18 : 15,
-            fontWeight: FontWeight.bold,
+            color: d.$3 ? AppColors.emerald400 : Colors.white.withValues(alpha: 0.5),
+            fontSize: d.$3 ? 18 : 14,
+            fontWeight: d.$3 ? FontWeight.w800 : FontWeight.w600,
           ),
         ),
       );
@@ -299,12 +263,15 @@ class _QiblaCompassState extends State<QiblaCompass>
   }
 }
 
-class _QiblaNeedle extends StatelessWidget {
+// ─── Needle ───────────────────────────────────────────────────────────────────
+class _Needle extends StatelessWidget {
+  const _Needle();
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 180,
-      height: 180,
+      width: 160,
+      height: 160,
       child: CustomPaint(painter: _NeedlePainter()),
     );
   }
@@ -313,45 +280,184 @@ class _QiblaNeedle extends StatelessWidget {
 class _NeedlePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final halfH = size.height / 2;
+    final cx = size.width / 2;
+    final cy = size.height / 2;
+    final h  = size.height / 2;
 
-    // North tip (pointing to Kaaba) — emerald
-    final tipPaint = Paint()
-      ..color = AppColors.emerald500
-      ..style = PaintingStyle.fill;
-
-    // South tip — slate
-    final tailPaint = Paint()
-      ..color = AppColors.slate500
-      ..style = PaintingStyle.fill;
-
-    // North half
+    // North (to Kaaba) — emerald with glow
     final northPath = Path()
-      ..moveTo(center.dx, center.dy - halfH + 8)
-      ..lineTo(center.dx - 8, center.dy + 4)
-      ..lineTo(center.dx, center.dy)
-      ..lineTo(center.dx + 8, center.dy + 4)
+      ..moveTo(cx, cy - h + 10)
+      ..lineTo(cx - 7, cy + 6)
+      ..lineTo(cx, cy + 2)
+      ..lineTo(cx + 7, cy + 6)
       ..close();
 
-    // South half
+    // South — muted
     final southPath = Path()
-      ..moveTo(center.dx, center.dy + halfH - 8)
-      ..lineTo(center.dx - 8, center.dy - 4)
-      ..lineTo(center.dx, center.dy)
-      ..lineTo(center.dx + 8, center.dy - 4)
+      ..moveTo(cx, cy + h - 10)
+      ..lineTo(cx - 7, cy - 6)
+      ..lineTo(cx, cy - 2)
+      ..lineTo(cx + 7, cy - 6)
       ..close();
 
-    canvas.drawPath(southPath, tailPaint);
-    canvas.drawPath(northPath, tipPaint);
+    canvas.drawPath(southPath, Paint()..color = const Color(0xFF2A4A5A));
 
-    // Glow on tip
-    final glowPaint = Paint()
-      ..color = AppColors.emerald400.withOpacity(0.3)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
-    canvas.drawPath(northPath, glowPaint);
+    // Glow
+    canvas.drawPath(northPath, Paint()
+      ..color = AppColors.emerald400.withValues(alpha: 0.3)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10));
+
+    canvas.drawPath(northPath, Paint()
+      ..shader = const LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [AppColors.emerald300, AppColors.emerald600],
+      ).createShader(Rect.fromLTWH(cx - 8, cy - h + 10, 16, h + 4)));
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant CustomPainter old) => false;
+}
+
+// ─── Tick marks ───────────────────────────────────────────────────────────────
+class _TickPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final cx = size.width / 2;
+    final cy = size.height / 2;
+    final r  = size.width / 2;
+
+    for (int i = 0; i < 72; i++) {
+      final angle  = i * (2 * math.pi / 72);
+      final isMajor = i % 9 == 0;
+      final len    = isMajor ? 10.0 : 5.0;
+      final paint  = Paint()
+        ..color = isMajor
+            ? Colors.white.withValues(alpha: 0.35)
+            : Colors.white.withValues(alpha: 0.10)
+        ..strokeWidth = isMajor ? 1.5 : 0.8
+        ..strokeCap = StrokeCap.round;
+
+      canvas.drawLine(
+        Offset(cx + (r - len) * math.sin(angle), cy - (r - len) * math.cos(angle)),
+        Offset(cx + r * math.sin(angle), cy - r * math.cos(angle)),
+        paint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter old) => false;
+}
+
+// ─── Center jewel ─────────────────────────────────────────────────────────────
+class _CenterJewel extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 18,
+      height: 18,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: AppColors.darkBg,
+        border: Border.all(color: AppColors.emerald400, width: 2),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.emerald400.withValues(alpha: 0.5),
+            blurRadius: 8,
+            spreadRadius: 1,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── Glass pill container ─────────────────────────────────────────────────────
+class _GlassPill extends StatelessWidget {
+  final Widget child;
+  final EdgeInsetsGeometry padding;
+
+  const _GlassPill({
+    required this.child,
+    this.padding = const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(16),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+        child: Container(
+          padding: padding,
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.07),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+          ),
+          child: child,
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Loading / error states ───────────────────────────────────────────────────
+class _CompassLoading extends StatelessWidget {
+  const _CompassLoading();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const SizedBox(
+          width: 48,
+          height: 48,
+          child: CircularProgressIndicator(
+            color: AppColors.emerald400,
+            strokeWidth: 2,
+          ),
+        ),
+        const SizedBox(height: 16),
+        Text('Duke gjetur lokacionin...',
+            style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 14)),
+      ],
+    );
+  }
+}
+
+class _CompassError extends StatelessWidget {
+  final String error;
+  final VoidCallback onRetry;
+  const _CompassError({required this.error, required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(32),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.location_off_rounded, color: AppColors.amber400, size: 48),
+          const SizedBox(height: 16),
+          Text(error,
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.white.withValues(alpha: 0.65), fontSize: 14)),
+          const SizedBox(height: 24),
+          FilledButton.icon(
+            onPressed: onRetry,
+            icon: const Icon(Icons.refresh_rounded),
+            label: const Text('Provo Sërish'),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.emerald600,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

@@ -1,8 +1,10 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../theme/app_theme.dart';
 import 'home_screen.dart';
 import 'qibla_screen.dart';
+import 'settings_screen.dart';
 
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
@@ -17,6 +19,7 @@ class _MainShellState extends State<MainShell> {
   final _screens = const [
     HomeScreen(),
     QiblaScreen(),
+    SettingsScreen(),
   ];
 
   @override
@@ -57,18 +60,25 @@ class _FloatingNav extends StatelessWidget {
             child: Row(
               children: [
                 _NavItem(
-                  icon: Icons.access_time_rounded,
-                  activeIcon: Icons.access_time_filled_rounded,
+                  icon: PhosphorIcons.clock(),
+                  activeIcon: PhosphorIcons.clock(PhosphorIconsStyle.fill),
                   label: 'Vaktet',
                   isSelected: currentIndex == 0,
                   onTap: () => onTap(0),
                 ),
                 _NavItem(
-                  icon: Icons.explore_outlined,
-                  activeIcon: Icons.explore_rounded,
+                  icon: PhosphorIcons.compass(),
+                  activeIcon: PhosphorIcons.compass(PhosphorIconsStyle.fill),
                   label: 'Kibla',
                   isSelected: currentIndex == 1,
                   onTap: () => onTap(1),
+                ),
+                _NavItem(
+                  icon: PhosphorIcons.gear(),
+                  activeIcon: PhosphorIcons.gear(PhosphorIconsStyle.fill),
+                  label: 'Cilësimet',
+                  isSelected: currentIndex == 2,
+                  onTap: () => onTap(2),
                 ),
               ],
             ),
@@ -80,8 +90,8 @@ class _FloatingNav extends StatelessWidget {
 }
 
 class _NavItem extends StatelessWidget {
-  final IconData icon;
-  final IconData activeIcon;
+  final PhosphorIconData icon;
+  final PhosphorIconData activeIcon;
   final String label;
   final bool isSelected;
   final VoidCallback onTap;
@@ -115,17 +125,20 @@ class _NavItem extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
+              PhosphorIcon(
                 isSelected ? activeIcon : icon,
                 size: 22,
-                color: isSelected ? AppColors.emerald400 : Colors.white.withValues(alpha: 0.4),
+                color: isSelected
+                    ? AppColors.emerald400
+                    : Colors.white.withValues(alpha: 0.4),
               ),
               const SizedBox(height: 2),
               AnimatedDefaultTextStyle(
                 duration: const Duration(milliseconds: 200),
                 style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
+                  fontSize: 9,
+                  fontWeight:
+                      isSelected ? FontWeight.w700 : FontWeight.w400,
                   color: isSelected
                       ? AppColors.emerald400
                       : Colors.white.withValues(alpha: 0.4),

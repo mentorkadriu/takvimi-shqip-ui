@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:provider/provider.dart';
 import '../models/prayer_times.dart';
 import '../services/prayer_provider.dart';
@@ -34,12 +35,7 @@ class _PrayerCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final meta = prayerMeta[entry.key] ?? prayerMeta['dhuhr']!;
-
-    return _CardShell(
-      entry: entry,
-      meta: meta,
-      index: index,
-    );
+    return _CardShell(entry: entry, meta: meta, index: index);
   }
 }
 
@@ -56,12 +52,11 @@ class _CardShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isCurrent  = entry.status == PrayerStatus.current;
-    final isNext     = entry.status == PrayerStatus.next;
-    final isPast     = entry.status == PrayerStatus.past;
+    final isCurrent   = entry.status == PrayerStatus.current;
+    final isNext      = entry.status == PrayerStatus.next;
+    final isPast      = entry.status == PrayerStatus.past;
     final isSecondary = entry.isSecondary;
 
-    // ── Dynamic styling per state ──────────────────────────────────────────
     final Color borderColor;
     final List<Color> bgGradient;
     final double cardOpacity;
@@ -131,10 +126,13 @@ class _CardShell extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    // ── Icon bubble ──────────────────────────────────────
-                    _IconBubble(meta: meta, isCurrent: isCurrent, isSecondary: isSecondary),
+                    _IconBubble(
+                      meta: meta,
+                      prayerKey: entry.key,
+                      isCurrent: isCurrent,
+                      isSecondary: isSecondary,
+                    ),
                     const SizedBox(width: 14),
-                    // ── Name ─────────────────────────────────────────────
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -159,11 +157,9 @@ class _CardShell extends StatelessWidget {
                         ],
                       ),
                     ),
-                    // ── Status badge ──────────────────────────────────────
-                    if (isCurrent) _Badge(label: 'AKTUAL', color: AppColors.emerald400),
-                    if (isNext)    _Badge(label: 'TJETRI', color: AppColors.blue400),
+                    if (isCurrent) const _Badge(label: 'AKTUAL', color: AppColors.emerald400),
+                    if (isNext)    const _Badge(label: 'TJETRI', color: AppColors.blue400),
                     const SizedBox(width: 8),
-                    // ── Time ─────────────────────────────────────────────
                     Text(
                       entry.time,
                       style: TextStyle(
@@ -193,11 +189,13 @@ class _CardShell extends StatelessWidget {
 
 class _IconBubble extends StatelessWidget {
   final PrayerMeta meta;
+  final String prayerKey;
   final bool isCurrent;
   final bool isSecondary;
 
   const _IconBubble({
     required this.meta,
+    required this.prayerKey,
     required this.isCurrent,
     required this.isSecondary,
   });
@@ -205,6 +203,7 @@ class _IconBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final size = isSecondary ? 38.0 : 44.0;
+    final iconSize = isSecondary ? 17.0 : 21.0;
     return Container(
       width: size,
       height: size,
@@ -227,9 +226,12 @@ class _IconBubble extends StatelessWidget {
         ),
       ),
       child: Center(
-        child: Text(
-          meta.emoji,
-          style: TextStyle(fontSize: isSecondary ? 18 : 22),
+        child: PhosphorIcon(
+          prayerIcon(prayerKey, fill: isCurrent),
+          size: iconSize,
+          color: isCurrent
+              ? AppColors.emerald300
+              : Colors.white.withValues(alpha: 0.85),
         ),
       ),
     );

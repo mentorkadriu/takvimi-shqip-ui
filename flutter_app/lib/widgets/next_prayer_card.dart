@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:provider/provider.dart';
 import '../services/prayer_provider.dart';
 import '../theme/app_theme.dart';
@@ -18,8 +19,7 @@ class NextPrayerCard extends StatelessWidget {
 
     if (next == null && current == null) return const SizedBox.shrink();
 
-    final prayer = next ?? current!;
-    final meta   = prayerMeta[prayer.key] ?? prayerMeta['dhuhr']!;
+    final prayer  = next ?? current!;
     final hours   = remaining.inHours;
     final minutes = remaining.inMinutes % 60;
 
@@ -82,8 +82,8 @@ class NextPrayerCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 16),
-                  // ── Right: emoji + time ──────────────────────────────────
-                  _TimeOrb(time: prayer.time, emoji: meta.emoji),
+                  // ── Right: icon + time ───────────────────────────────────
+                  _TimeOrb(time: prayer.time, prayerKey: prayer.key),
                 ],
               ),
             ),
@@ -180,8 +180,8 @@ class _Chip extends StatelessWidget {
 
 class _TimeOrb extends StatelessWidget {
   final String time;
-  final String emoji;
-  const _TimeOrb({required this.time, required this.emoji});
+  final String prayerKey;
+  const _TimeOrb({required this.time, required this.prayerKey});
 
   @override
   Widget build(BuildContext context) {
@@ -211,8 +211,12 @@ class _TimeOrb extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(emoji, style: const TextStyle(fontSize: 24)),
-          const SizedBox(height: 2),
+          PhosphorIcon(
+            prayerIcon(prayerKey, fill: true),
+            size: 26,
+            color: AppColors.emerald300,
+          ),
+          const SizedBox(height: 4),
           Text(
             time,
             style: const TextStyle(

@@ -1,0 +1,67 @@
+name: takvimi_shqip
+description: Takvimi Shqip - Albanian Islamic Prayer Times App
+publish_to: 'none'
+version: 2.0.0+1
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State management
+  provider: ^6.1.2
+
+  # HTTP & networking
+  http: ^1.2.2
+
+  # Geolocation
+  geolocator: ^13.0.2
+
+  # Device orientation (for Qibla compass)
+  sensors_plus: ^6.1.0
+
+  # Local storage
+  shared_preferences: ^2.3.3
+
+  # Date/time helpers
+  intl: ^0.19.0
+
+  # Islamic calendar conversion
+  hijri: ^2.0.2
+
+  # Compass/math
+  vector_math: ^2.1.4
+
+  # Icons
+  cupertino_icons: ^1.0.8
+  flutter_svg: ^2.0.10+1
+
+  # Animations
+  flutter_animate: ^4.5.0
+
+  # Lottie animations (optional)
+  # lottie: ^3.1.2
+
+  # Connectivity
+  connectivity_plus: ^6.1.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/data/kosovo-prayer-times.json
+    - assets/images/
+
+  fonts:
+    - family: NotoSansArabic
+      fonts:
+        - asset: assets/fonts/NotoSansArabic-Regular.ttf
+        - asset: assets/fonts/NotoSansArabic-Bold.ttf
+          weight: 700

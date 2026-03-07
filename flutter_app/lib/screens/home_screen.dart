@@ -3,7 +3,6 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../services/prayer_provider.dart';
-import '../services/prayer_times_service.dart';
 import '../services/hijri_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/week_date_selector.dart';
@@ -185,7 +184,6 @@ class _DateInfoRow extends StatelessWidget {
     final day = provider.prayerDay;
     final selectedDate = provider.selectedDate;
     final hijriStr = HijriService.toHijriString(selectedDate);
-    final monthName = PrayerTimesService.albanianMonth(selectedDate.month);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Padding(

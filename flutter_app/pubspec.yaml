@@ -28,9 +28,6 @@ dependencies:
   # Date/time helpers
   intl: ^0.19.0
 
-  # Islamic calendar conversion
-  hijri: ^2.0.2
-
   # Compass/math
   vector_math: ^2.1.4
 
@@ -57,11 +54,3 @@ flutter:
 
   assets:
     - assets/data/kosovo-prayer-times.json
-    - assets/images/
-
-  fonts:
-    - family: NotoSansArabic
-      fonts:
-        - asset: assets/fonts/NotoSansArabic-Regular.ttf
-        - asset: assets/fonts/NotoSansArabic-Bold.ttf
-          weight: 700

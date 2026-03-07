@@ -20,7 +20,6 @@ class _QiblaCompassState extends State<QiblaCompass>
   StreamSubscription<MagnetometerEvent>? _magnetometerSub;
   late AnimationController _animController;
   late Animation<double> _rotationAnim;
-  double _targetRotation = 0;
   bool _isLoading = true;
   String? _error;
   double? _userLat;
@@ -106,7 +105,6 @@ class _QiblaCompassState extends State<QiblaCompass>
       end: target * math.pi / 180,
     ).animate(CurvedAnimation(parent: _animController, curve: Curves.easeOut));
     _animController.forward(from: 0);
-    _targetRotation = target;
   }
 
   @override

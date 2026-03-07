@@ -4,6 +4,8 @@ class AppColors {
   // Primary brand — teal/emerald
   static const emerald50 = Color(0xFFECFDF5);
   static const emerald100 = Color(0xFFD1FAE5);
+  static const emerald200 = Color(0xFFA7F3D0);
+  static const emerald300 = Color(0xFF6EE7B7);
   static const emerald400 = Color(0xFF34D399);
   static const emerald500 = Color(0xFF10B981);
   static const emerald600 = Color(0xFF059669);
@@ -52,7 +54,7 @@ class AppTheme {
         backgroundColor: Colors.transparent,
         foregroundColor: Colors.white,
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         elevation: 0,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         color: Colors.white,
@@ -81,7 +83,7 @@ class AppTheme {
         backgroundColor: Colors.transparent,
         foregroundColor: Colors.white,
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         elevation: 0,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         color: AppColors.slate800,
